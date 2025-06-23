@@ -120,7 +120,6 @@ class ReportGenerator
             'timestamp' => date('Y-m-d H:i:s'),
             'metadata' => [
                 'generator' => 'VoltTest Laravel Package',
-                'version' => '1.0.0', // You might want to get this from composer.json
             ],
             'summary' => [
                 'duration' => $result->getDuration(),
