@@ -139,7 +139,6 @@ class ReportGenerator
                 'p99' => $result->getP99ResponseTime(),
             ],
             'metrics' => $result->getAllMetrics(),
-            'raw_output' => $result->getRawOutput(),
         ];
     }
 }
