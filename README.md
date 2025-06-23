@@ -20,7 +20,6 @@ This Laravel package extends the **[VoltTest PHP SDK](https://php.volt-test.com/
 For comprehensive documentation about VoltTest core features, load testing concepts, and advanced configuration options, please visit **[php.volt-test.com](https://php.volt-test.com/)**.
 
 ## Requirements
-
 - PHP 8.0+
 - VoltTest PHP SDK 1.1.0+
 
