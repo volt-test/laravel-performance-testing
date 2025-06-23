@@ -47,13 +47,13 @@ class RouteDiscoverer
 
             if (! empty($options['auth'])) {
                 $middleware = $route->middleware();
-                if (! in_array('auth', $middleware, true) && ! in_array('auth:api', $middleware, true)) {
+                if (is_array($middleware) && ! in_array('auth', $middleware, true) && ! in_array('auth:api', $middleware, true)) {
                     continue;
                 }
             }
 
             $middleware = $route->middleware();
-            $type = (in_array('api', $middleware, true) || Str::startsWith($uri, 'api/')) ? 'api' : 'web';
+            $type = ((is_array($middleware) && in_array('api', $middleware, true)) || Str::startsWith($uri, 'api/')) ? 'api' : 'web';
 
             $filteredRoutes[] = [
                 'methods' => $route->methods(),
@@ -100,7 +100,7 @@ class RouteDiscoverer
             true
         );
 
-        return collect($selected)
+        return collect((array) $selected)
             ->map(function ($label) use ($choices, $routes) {
                 $index = array_search($label, $choices, true);
 

@@ -6,13 +6,14 @@ namespace VoltTest\Laravel\Services;
 
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\File;
+use VoltTest\TestResult;
 
 class ReportGenerator
 {
     /**
      * Display a summary of the test results.
      */
-    public function displaySummary($result, Command $command): void
+    public function displaySummary(TestResult $result, Command $command): void
     {
         $command->info('Test Results Summary:');
         $command->info('=====================');
@@ -24,7 +25,7 @@ class ReportGenerator
     /**
      * Display basic metrics.
      */
-    protected function displayMetrics($result, Command $command): void
+    protected function displayMetrics(TestResult $result, Command $command): void
     {
         $metrics = [
             'Duration' => $result->getDuration(),
@@ -43,7 +44,7 @@ class ReportGenerator
     /**
      * Display response time statistics.
      */
-    protected function displayResponseTimes($result, Command $command): void
+    protected function displayResponseTimes(TestResult $result, Command $command): void
     {
         $command->info('');
         $command->info('Response Time:');
@@ -66,7 +67,7 @@ class ReportGenerator
     /**
      * Save the test results to a report file.
      */
-    public function saveReport($result): string
+    public function saveReport(TestResult $result): string
     {
         $reportsPath = $this->ensureReportsDirectory();
         $filename = $this->generateReportFilename();
@@ -74,7 +75,14 @@ class ReportGenerator
 
         $reportData = $this->prepareReportData($result);
 
-        File::put($filePath, json_encode($reportData, JSON_PRETTY_PRINT));
+        $json = json_encode($reportData, JSON_PRETTY_PRINT);
+
+        if ($json === false) {
+            throw new \RuntimeException('Failed to encode report data to JSON.');
+        }
+        if (File::put($filePath, $json) === false) {
+            throw new \RuntimeException("Failed to write report to file: {$filePath}");
+        }
 
         return $filePath;
     }
@@ -106,7 +114,7 @@ class ReportGenerator
     /**
      * Prepare the report data structure.
      */
-    protected function prepareReportData($result): array
+    protected function prepareReportData(TestResult $result): array
     {
         return [
             'timestamp' => date('Y-m-d H:i:s'),

@@ -11,6 +11,7 @@ use VoltTest\Laravel\Services\TestClassDiscoverer;
 use VoltTest\Laravel\Services\TestConfigurationValidator;
 use VoltTest\Laravel\Services\TestRunner;
 use VoltTest\Laravel\Services\UrlTestCreator;
+use VoltTest\TestResult;
 
 class RunVoltTestCommand extends Command
 {
@@ -75,13 +76,15 @@ class RunVoltTestCommand extends Command
     {
         $voltTest = VoltTest::getVoltTest();
 
-        if ($users = $this->option('users')) {
+        $users = $this->option('users');
+        if (is_string($users)) {
             $this->validator->validateVirtualUsers($users);
             $voltTest->setVirtualUsers((int) $users);
             $this->info("Set virtual users: {$users}");
         }
 
-        if ($duration = $this->option('duration')) {
+        $duration = $this->option('duration');
+        if ($duration && is_string($duration)) {
             $this->validator->validateDuration($duration);
             $voltTest->setDuration($duration);
             $this->info("Set test duration: {$duration}");
@@ -100,7 +103,7 @@ class RunVoltTestCommand extends Command
     {
         $test = $this->argument('test');
 
-        if ($this->shouldRunUrlTest($test)) {
+        if (is_string($test) && $this->shouldRunUrlTest($test)) {
             $this->setupUrlTest($test);
         } else {
             $this->setupClassTests();
@@ -156,11 +159,15 @@ class RunVoltTestCommand extends Command
     /**
      * Execute the tests.
      */
-    protected function executeTests()
+    protected function executeTests() : mixed
     {
         $this->info('Starting VoltTest performance tests...');
 
         $streamOutput = $this->option('stream');
+        if (!is_bool($streamOutput)) {
+            $this->error('Invalid value for --stream option. It should be true or false.');
+            return null;
+        }
 
         if ($streamOutput) {
             $this->info('Streaming output to console...');
@@ -172,7 +179,7 @@ class RunVoltTestCommand extends Command
     /**
      * Handle test results.
      */
-    protected function handleResults($result): void
+    protected function handleResults(TestResult $result): void
     {
         if (! $this->option('stream')) {
             $this->reportGenerator->displaySummary($result, $this);
@@ -189,14 +196,18 @@ class RunVoltTestCommand extends Command
      */
     protected function getUrlTestOptions(): array
     {
-        return [
+        $options = [
             'method' => $this->option('method') ?? 'GET',
             'scenario_name' => $this->option('scenario-name'),
             'body' => $this->option('body') ?? '',
             'content_type' => $this->option('content-type'),
-            'headers' => $this->parseHeaders($this->option('headers')),
             'expected_status_code' => (int) ($this->option('code-status') ?? 200),
         ];
+        if (is_string($this->option('headers'))) {
+            $this->validator->validateJsonString($this->option('headers'));
+            $options['headers'] = $this->parseHeaders($this->option('headers'));
+        }
+        return $options;
     }
 
     /**
@@ -235,8 +246,10 @@ class RunVoltTestCommand extends Command
         }
 
         $searchPath = $this->option('path');
-        if ($searchPath) {
+        if ($searchPath && is_string($searchPath)) {
             $this->validator->validatePath($searchPath);
+        } else {
+            $searchPath = null;
         }
 
         return $this->testDiscoverer->findTestClasses($searchPath);
