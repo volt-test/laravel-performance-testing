@@ -1,0 +1,69 @@
+{
+  "name": "volt-test/laravel-performance-testing",
+  "description": "A Laravel package for performance testing with VoltTest",
+  "type": "library",
+  "license": "MIT",
+  "version": "0.0.1-beta",
+  "keywords": [
+    "volt-test",
+    "laravel",
+    "performance-testing",
+    "load-testing",
+    "stress-testing"
+  ],
+  "authors": [
+    {
+      "name": "Islam ElWafa",
+      "email": "islam@volt-test.com"
+    }
+  ],
+  "require": {
+    "php": "^8.0",
+    "illuminate/support": "^8.0|^9.0|^10.0|^11.0|^12.0",
+    "volt-test/php-sdk": "^1.0.0"
+  },
+  "require-dev": {
+    "orchestra/testbench": "^6.0|^7.0|^8.0",
+    "phpunit/phpunit": "^9.0|^10.0",
+    "phpstan/phpstan": "^1.10",
+    "phpstan/phpstan-deprecation-rules": "^1.1",
+    "friendsofphp/php-cs-fixer": "^3.14"
+  },
+  "autoload": {
+    "psr-4": {
+      "VoltTest\\Laravel\\": "src/"
+    }
+  },
+  "autoload-dev": {
+    "psr-4": {
+      "VoltTest\\Laravel\\Tests\\": "tests/"
+    }
+  },
+  "extra": {
+    "laravel": {
+      "providers": [
+        "VoltTest\\Laravel\\VoltTestServiceProvider"
+      ],
+      "aliases": {
+        "VoltTest": "VoltTest\\Laravel\\Facades\\VoltTest"
+      }
+    }
+  },
+  "scripts": {
+    "test": "phpunit",
+    "phpstan": "phpstan analyse",
+    "cs": "PHP_CS_FIXER_IGNORE_ENV=1 php-cs-fixer fix --diff",
+    "cs-check": "PHP_CS_FIXER_IGNORE_ENV=1 php-cs-fixer fix --dry-run --diff",
+    "analyse": "phpstan analyze --memory-limit=2G",
+    "check": [
+      "@cs-check",
+      "@analyse",
+      "@test"
+    ]
+  },
+  "config": {
+    "sort-packages": true
+  },
+  "minimum-stability": "stable",
+  "prefer-stable": true
+}

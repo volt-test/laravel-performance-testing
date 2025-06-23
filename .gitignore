@@ -1,0 +1,41 @@
+#php
+/vendor/
+composer.phar
+composer.lock
+
+# PHPUnit
+.phpunit.result.cache
+.phpunit.cache
+coverage/
+.phpunit.cache/
+.php-cs-fixer.cache
+.phpstan.result.cache
+
+# IDE
+.idea/
+.vscode/
+*.sublime-project
+*.sublime-workspace
+*.swp
+*.swo
+
+# OS generated files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# Project specific
+/tmp/
+*.log
+*.cache
+.env
+.env.local
+.env.*.local
+TODO.md
+
+# bakup files
+*.bak

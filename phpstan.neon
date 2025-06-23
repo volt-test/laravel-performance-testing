@@ -1,0 +1,15 @@
+parameters:
+    level: 7
+    paths:
+        - src
+    excludePaths:
+        analyseAndScan:
+            - %rootDir%/../../../vendor/*
+    checkMissingIterableValueType: false
+    checkGenericClassInNonGenericObjectType: false
+    ignoreErrors:
+        # Add specific error patterns to ignore here if needed
+    reportUnmatchedIgnoredErrors: true
+
+includes:
+    - vendor/phpstan/phpstan-deprecation-rules/rules.neon

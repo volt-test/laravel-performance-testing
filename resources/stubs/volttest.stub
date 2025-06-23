@@ -1,0 +1,23 @@
+<?php
+
+namespace {{ namespace }};
+
+use VoltTest\Laravel\Contracts\VoltTestCase;
+use VoltTest\Laravel\VoltTestManager;
+
+class {{ class }} implements VoltTestCase
+{
+    /**
+     * Define the test scenario.
+     *
+     * @param VoltTestManager $manager
+     * @return void
+     */
+    public function define(VoltTestManager $manager): void
+    {
+        // Define your test scenario
+        $scenario = $manager->scenario('{{ class }}', 'Performance test for application routes');
+
+{{ routes }}
+    }
+}
