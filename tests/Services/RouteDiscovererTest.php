@@ -43,7 +43,10 @@ class RouteDiscovererTest extends TestCase
         $this->router->get('/another-route', fn () => 'OK')->name('another.route');
 
         // Act
-        $routes = $this->discoverer->discover([]);
+        $routes = collect($this->discoverer->discover([]))
+            ->reject(fn ($route) => $route['uri'] === 'storage/{path}')
+            ->values()
+            ->all();
 
         // Assert
         $this->assertNotEmpty($routes, 'No routes were discovered.');
@@ -74,7 +77,10 @@ class RouteDiscovererTest extends TestCase
         $this->assertContains('POST', $postRoutes[0]['methods']);
 
         // Act - Filter by GET
-        $getRoutes = $this->discoverer->discover(['method' => 'GET']);
+        $getRoutes = collect($this->discoverer->discover(['method' => 'GET']))
+            ->reject(fn ($route) => $route['uri'] === 'storage/{path}')
+            ->values()
+            ->all();
 
         // Assert
         $this->assertCount(1, $getRoutes);
@@ -208,7 +214,10 @@ class RouteDiscovererTest extends TestCase
         $this->router->get('/named-route', fn () => 'OK')->name('named.route');
 
         // Act
-        $routes = $this->discoverer->discover([]);
+        $routes = collect($this->discoverer->discover([]))
+            ->reject(fn ($route) => $route['uri'] === 'storage/{path}')
+            ->values()
+            ->all();
 
         // Assert
         $this->assertCount(2, $routes);

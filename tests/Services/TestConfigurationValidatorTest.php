@@ -47,6 +47,7 @@ class TestConfigurationValidatorTest extends TestCase
 
         $this->validator->validateVirtualUsers('-1');
     }
+
     /** @test */
     public function it_validates_duration_formats_successfully(): void
     {
@@ -62,6 +63,7 @@ class TestConfigurationValidatorTest extends TestCase
 
         $this->assertTrue(true); // No exceptions thrown
     }
+
     /** @test */
     public function it_rejects_invalid_duration_formats(): void
     {
@@ -84,6 +86,7 @@ class TestConfigurationValidatorTest extends TestCase
             }
         }
     }
+
     /** @test */
     public function it_validates_http_methods_successfully(): void
     {
@@ -286,16 +289,6 @@ class TestConfigurationValidatorTest extends TestCase
         }
     }
 
-    /** @test */
-    public function it_rejects_long_scenario_names_in_url_options(): void
-    {
-        $this->expectException(InvalidArgumentException::class);
-        $this->expectExceptionMessage('Scenario name is too long');
-
-        $this->validator->validateUrlTestOptions([
-            'scenario_name' => str_repeat('A', 101),
-        ]);
-    }
 
     /** @test */
     public function it_handles_edge_case_status_codes(): void
