@@ -6,16 +6,15 @@
          failOnRisky="true"
          failOnWarning="true"
          xsi:noNamespaceSchemaLocation="https://schema.phpunit.de/10.5/phpunit.xsd"
-         cacheDirectory=".phpunit.cache"
 >
   <testsuites>
     <testsuite name="VoltTest Laravel Package">
       <directory suffix="Test.php">./tests</directory>
     </testsuite>
   </testsuites>
-  <source>
+  <coverage>
     <include>
       <directory suffix=".php">./src</directory>
     </include>
-  </source>
+  </coverage>
 </phpunit>
