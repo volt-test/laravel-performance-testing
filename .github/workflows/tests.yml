@@ -16,25 +16,9 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        php-version: ['8.0', '8.1', '8.2', '8.3', '8.4']
-        laravel-version: ['8.*', '9.*', '10.*', '11.*', '12.*']
+        php-version: ['8.2', '8.3', '8.4']
+        laravel-version: ['11.*', '12.*']
         dependency-version: [prefer-stable]
-        include:
-          - php-version: '8.0'
-            laravel-version: '8.*'
-            testbench-version: '^6.0'
-          - php-version: '8.1'
-            laravel-version: '9.*'
-            testbench-version: '^7.0'
-          - php-version: '8.2'
-            laravel-version: '10.*'
-            testbench-version: '^8.0'
-          - php-version: '8.2'
-            laravel-version: '11.*'
-            testbench-version: '^8.0'
-          - php-version: '8.3'
-            laravel-version: '12.*'
-            testbench-version: '^8.5'
 
     name: PHP ${{ matrix.php-version }} - Laravel ${{ matrix.laravel-version }} (${{ matrix.dependency-version }})
 
