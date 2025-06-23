@@ -159,13 +159,14 @@ class RunVoltTestCommand extends Command
     /**
      * Execute the tests.
      */
-    protected function executeTests() : mixed
+    protected function executeTests(): mixed
     {
         $this->info('Starting VoltTest performance tests...');
 
         $streamOutput = $this->option('stream');
-        if (!is_bool($streamOutput)) {
+        if (! is_bool($streamOutput)) {
             $this->error('Invalid value for --stream option. It should be true or false.');
+
             return null;
         }
 
@@ -207,6 +208,7 @@ class RunVoltTestCommand extends Command
             $this->validator->validateJsonString($this->option('headers'));
             $options['headers'] = $this->parseHeaders($this->option('headers'));
         }
+
         return $options;
     }
 
