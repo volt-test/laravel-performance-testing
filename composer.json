@@ -23,7 +23,7 @@
     "volt-test/php-sdk": "^1.0.0"
   },
   "require-dev": {
-    "orchestra/testbench": "^8.12|^9.0",
+    "orchestra/testbench": "^9.0",
     "phpunit/phpunit": "^10.0",
     "phpstan/phpstan": "^1.10",
     "phpstan/phpstan-deprecation-rules": "^1.1",
