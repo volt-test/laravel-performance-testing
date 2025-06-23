@@ -289,7 +289,6 @@ class TestConfigurationValidatorTest extends TestCase
         }
     }
 
-
     /** @test */
     public function it_handles_edge_case_status_codes(): void
     {
