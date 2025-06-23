@@ -1,0 +1,104 @@
+name: Tests
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main, develop ]
+
+env:
+  COMPOSER_NO_INTERACTION: 1
+
+jobs:
+  tests:
+    runs-on: ubuntu-latest
+
+    strategy:
+      fail-fast: false
+      matrix:
+        php-version: ['8.0', '8.1', '8.2', '8.3', '8.4']
+        laravel-version: ['8.*', '9.*', '10.*', '11.*', '12.*']
+        dependency-version: [prefer-lowest, prefer-stable]
+        exclude:
+          # Laravel 10+ requires PHP 8.1+
+          - php-version: '8.0'
+            laravel-version: '10.*'
+          - php-version: '8.0'
+            laravel-version: '11.*'
+          # Laravel 11+ requires PHP 8.2+
+          - php-version: '8.1'
+            laravel-version: '11.*'
+        include:
+          # Add Laravel 12 support for PHP 8.2+
+          - php-version: '8.2'
+            laravel-version: '12.*'
+            dependency-version: prefer-stable
+          - php-version: '8.3'
+            laravel-version: '12.*'
+            dependency-version: prefer-stable
+
+    name: PHP ${{ matrix.php-version }} - Laravel ${{ matrix.laravel-version }} (${{ matrix.dependency-version }})
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: ${{ matrix.php-version }}
+          extensions: dom, curl, libxml, mbstring, zip, pcntl, pdo, sqlite, pdo_sqlite, bcmath, soap, intl, gd, exif, iconv, imagick, fileinfo
+          coverage: xdebug
+          tools: composer:v2
+
+      - name: Setup problem matchers
+        run: |
+          echo "::add-matcher::${{ runner.tool_cache }}/php.json"
+          echo "::add-matcher::${{ runner.tool_cache }}/phpunit.json"
+
+      - name: Get composer cache directory
+        id: composer-cache
+        run: echo "dir=$(composer config cache-files-dir)" >> $GITHUB_OUTPUT
+
+      - name: Cache composer dependencies
+        uses: actions/cache@v4
+        with:
+          path: ${{ steps.composer-cache.outputs.dir }}
+          key: dependencies-laravel-${{ matrix.laravel-version }}-php-${{ matrix.php-version }}-composer-${{ hashFiles('composer.json') }}
+          restore-keys: dependencies-laravel-${{ matrix.laravel-version }}-php-${{ matrix.php-version }}-composer-
+
+      - name: Install composer dependencies
+        run: |
+          composer require "illuminate/support:${{ matrix.laravel-version }}" --no-interaction --no-update
+          composer update --${{ matrix.dependency-version }} --prefer-dist --no-interaction
+
+      - name: List Installed Dependencies
+        run: composer show -D
+
+      - name: Execute tests
+        run: composer run-script test
+
+      - name: Upload coverage reports to Codecov
+        if: matrix.php-version == '8.3' && matrix.laravel-version == '11.*' && matrix.dependency-version == 'prefer-stable'
+        uses: codecov/codecov-action@v4
+        with:
+          files: ./coverage.xml
+          fail_ci_if_error: false
+          verbose: true
+          token: ${{ secrets.CODECOV_TOKEN }}
+
+  test-results:
+    runs-on: ubuntu-latest
+    name: Test Results Summary
+    needs: [tests]
+    if: always()
+
+    steps:
+      - name: Test Results
+        run: |
+          if [ "${{ needs.tests.result }}" == "success" ]; then
+            echo "✅ All tests passed successfully!"
+          else
+            echo "❌ Tests failed!"
+            exit 1
+          fi
