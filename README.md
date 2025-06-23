@@ -459,27 +459,42 @@ Reports are automatically saved as JSON files in `storage/volttest/reports/`:
 
 ```json
 {
-    "timestamp": "2025-01-15 10:30:00",
-    "metadata": {
-        "generator": "VoltTest Laravel Package",
-        "version": "1.0.0"
-    },
-    "summary": {
-        "duration": "60s",
-        "total_requests": 1200,
-        "success_rate": 98.5,
-        "requests_per_second": 20.0,
-        "success_requests": 1182,
-        "failed_requests": 18
-    },
-    "response_times": {
-        "min": "45ms",
-        "max": "890ms",
-        "avg": "125ms",
-        "median": "110ms",
-        "p95": "250ms",
-        "p99": "400ms"
+  "timestamp": "2025-06-23 21:22:39",
+  "metadata": {
+    "generator": "VoltTest Laravel Package"
+  },
+  "summary": {
+    "duration": "5.521942656s",
+    "total_requests": 100,
+    "success_rate": 48,
+    "requests_per_second": 18.11,
+    "success_requests": 48,
+    "failed_requests": 52
+  },
+  "response_times": {
+    "min": "22.361918ms",
+    "max": "2.061161165s",
+    "avg": "343.184136ms",
+    "median": "106.130464ms",
+    "p95": "1.592337048s",
+    "p99": "1.84969821s"
+  },
+  "metrics": {
+    "duration": "5.521942656s",
+    "totalRequests": 100,
+    "successRate": 48,
+    "requestsPerSecond": 18.11,
+    "successRequests": 48,
+    "failedRequests": 52,
+    "responseTime": {
+      "min": "22.361918ms",
+      "max": "2.061161165s",
+      "avg": "343.184136ms",
+      "median": "106.130464ms",
+      "p95": "1.592337048s",
+      "p99": "1.84969821s"
     }
+  }
 }
 ```
 
