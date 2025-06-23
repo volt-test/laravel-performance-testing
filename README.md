@@ -21,7 +21,7 @@ For comprehensive documentation about VoltTest core features, load testing conce
 
 ## Requirements
 
-- PHP 8.0+
+- PHP 8.2+
 - VoltTest PHP SDK 1.1.0+
 
 ## Features
