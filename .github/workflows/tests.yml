@@ -6,6 +6,11 @@ on:
   pull_request:
     branches: [ main, develop ]
 
+permissions:
+  contents: read
+  secrets: read
+  actions: read
+
 env:
   COMPOSER_NO_INTERACTION: 1
 
