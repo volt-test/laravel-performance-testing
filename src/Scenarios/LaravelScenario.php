@@ -387,7 +387,7 @@ class LaravelScenario
 
         // Validate file exists if validation is enabled
         $validateFiles = $csvConfig['validate_files'] ?? true;
-        if ($validateFiles && !file_exists($filePath)) {
+        if ($validateFiles && ! file_exists($filePath)) {
             throw new VoltTestException("CSV data source file '{$filePath}' does not exist");
         }
 

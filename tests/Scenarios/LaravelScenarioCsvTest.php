@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace VoltTest\Laravel\Tests\Scenarios;
 
 use Orchestra\Testbench\TestCase;
-use VoltTest\DataSourceConfiguration;
 use VoltTest\Exceptions\VoltTestException;
 use VoltTest\Laravel\Scenarios\LaravelScenario;
 use VoltTest\Laravel\VoltTestServiceProvider;
@@ -34,7 +33,7 @@ class LaravelScenarioCsvTest extends TestCase
 
         // Create test fixtures directory
         $fixturesDir = __DIR__ . '/fixtures';
-        if (!is_dir($fixturesDir)) {
+        if (! is_dir($fixturesDir)) {
             mkdir($fixturesDir, 0755, true);
         }
 
