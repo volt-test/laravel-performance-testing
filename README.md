@@ -10,7 +10,7 @@ For more information about the core VoltTest functionality, visit **[php.volt-te
 
 ## Table of Contents
 
-- [About VoltTest](#about-volttest)
+- [About Laravel Performance Testing VoltTest](#about-laravel-performance-testing-volttest)
 - [Requirements](#requirements)
 - [Features](#features)
 - [Installation](#installation)
@@ -27,7 +27,7 @@ For more information about the core VoltTest functionality, visit **[php.volt-te
 - [Troubleshooting](#troubleshooting)
 - [Learn More](#learn-more)
 
-## About VoltTest
+## About Laravel Performance Testing VoltTest
 
 This Laravel package extends the **[VoltTest PHP SDK](https://php.volt-test.com/)** with Laravel-specific functionality. While the core VoltTest PHP SDK provides the foundation for performance testing, this package adds:
 
