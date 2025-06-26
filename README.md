@@ -58,7 +58,7 @@ For comprehensive documentation about VoltTest core features, load testing conce
 You can install the package via Composer:
 
 ```bash
-composer require volt-test/laravel-performance-testing
+composer require volt-test/laravel-performance-testing --dev
 ```
 
 The package will automatically register its service provider.
