@@ -50,6 +50,7 @@
     }
   },
   "scripts": {
+    "post-autoload-dump" : "VoltTest\\Platform::getBinaryPath",
     "test": "phpunit",
     "phpstan": "phpstan analyse",
     "cs": "PHP_CS_FIXER_IGNORE_ENV=1 php-cs-fixer fix --diff",
@@ -64,6 +65,5 @@
   "config": {
     "sort-packages": true
   },
-  "minimum-stability": "dev",
-  "prefer-stable": true
+  "minimum-stability": "dev"
 }
