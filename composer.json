@@ -3,7 +3,7 @@
   "description": "A Laravel package for performance testing with VoltTest",
   "type": "library",
   "license": "MIT",
-  "version": "0.0.6-beta",
+  "version": "v1.0.0",
   "keywords": [
     "volt-test",
     "laravel",
@@ -65,5 +65,6 @@
   "config": {
     "sort-packages": true
   },
-  "minimum-stability": "dev"
+  "minimum-stability": "stable",
+  "prefer-stable": true
 }

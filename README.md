@@ -6,7 +6,7 @@ This package is built on top of the **[VoltTest PHP SDK](https://php.volt-test.c
 
 For more information about the core VoltTest functionality, visit **[php.volt-test.com](https://php.volt-test.com/)**.
 
-[![Latest Version on Packagist](https://img.shields.io/packagist/v/volt-test/laravel-performance-testing.svg?style=flat-square)](https://packagist.org/packages/volt-test/laravel-performance-testing) [![Total Downloads](https://img.shields.io/packagist/dt/volt-test/laravel-performance-testing.svg?style=flat-square)](https://packagist.org/packages/volt-test/laravel-performance-testing) [![GitHub Tests Action Status](https://img.shields.io/github/workflow/status/volt-test/laravel-performance-testing/run-tests?label=tests)](https://github.com/volt-test/laravel-performance-testing/actions?query=workflow%3Arun-tests+branch%3Amain)
+[![Latest Version on Packagist](https://img.shields.io/packagist/v/volt-test/laravel-performance-testing.svg?style=flat-square)](https://packagist.org/packages/volt-test/laravel-performance-testing) [![Total Downloads](https://img.shields.io/packagist/dt/volt-test/laravel-performance-testing.svg?style=flat-square)](https://packagist.org/packages/volt-test/laravel-performance-testing) [![GitHub Tests Action Status](https://img.shields.io/github/actions/workflow/status/volt-test/laravel-performance-testing/tests.yml?branch=main&label=tests&style=flat-square)](https://github.com/volt-test/laravel-performance-testing/actions)
 
 ## Table of Contents
 
