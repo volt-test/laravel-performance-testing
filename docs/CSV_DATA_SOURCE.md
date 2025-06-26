@@ -10,18 +10,29 @@ use VoltTest\Laravel\Facades\VoltTest;
 $manager = VoltTest::manager();
 
 // Create scenario with CSV data source
-$scenario = $manager->scenario('User Login Flow')
+$scenario = $manager->scenario('RegisterTest')
     ->dataSource('users.csv', 'unique', true);
 
-$scenario->step('Login')
-    ->post('/login', [
-        'email' => '${email}',        // From CSV column
-        'password' => '${password}'   // From CSV column
-    ])
+$scenario->step('Register')
+    ->get('/register')
+    ->header('Content-Type', 'application/x-www-form-urlencoded')
+    ->extractCsrfToken('token')
     ->expectStatus(200);
 
-$scenario->step('View Profile')
-    ->get('/profile/${user_id}')     // user_id from same CSV row
+$scenario->step('Register')
+    ->post('/register', [
+        '_token' => '${token}',
+        'name' => '${name}',           // From CSV column
+        'email' => '${email}',         // From CSV column
+        'password' => '${password}',   // From CSV column
+        'password_confirmation' => '${password}',
+    ])
+    ->header('Content-Type', 'application/x-www-form-urlencoded')
+    ->expectStatus(302);
+
+$scenario->step('Get Dashboard')
+    ->get('/dashboard')
+    ->header('Content-Type', 'text/html')
     ->expectStatus(200);
 ```
 
@@ -30,10 +41,10 @@ $scenario->step('View Profile')
 Your CSV files should follow this structure:
 
 ```csv
-email,password,user_id,name
-user1@example.com,password123,1,John Doe
-user2@example.com,password456,2,Jane Smith
-user3@example.com,password789,3,Bob Wilson
+name,email,password
+John Doe,user1@example.com,password123
+Jane Smith,user2@example.com,password456
+Bob Wilson,user3@example.com,password789
 ```
 
 ### Requirements:
