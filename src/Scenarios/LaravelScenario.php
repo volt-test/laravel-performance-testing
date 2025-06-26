@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace VoltTest\Laravel\Scenarios;
 
 use RuntimeException;
+use VoltTest\DataSourceConfiguration;
 use VoltTest\Exceptions\InvalidJsonPathException;
 use VoltTest\Exceptions\InvalidRegexException;
 use VoltTest\Exceptions\InvalidRequestValidationException;
@@ -362,5 +363,59 @@ class LaravelScenario
     public function getScenario(): Scenario
     {
         return $this->scenario;
+    }
+
+    /**
+     * Configure a CSV data source for this scenario.
+     *
+     * @param string $filename CSV filename (relative to csv_data.path config or absolute path)
+     * @param string|null $distribution Distribution mode: 'unique', 'random', or 'sequential'
+     * @param bool|null $hasHeaders Whether CSV has header row
+     * @return $this
+     * @throws VoltTestException
+     */
+    public function dataSource(string $filename, ?string $distribution = null, ?bool $hasHeaders = null): self
+    {
+        $csvConfig = config('volttest.csv_data', []);
+
+        // Use defaults from config if not specified
+        $distribution = $distribution ?? ($csvConfig['default_distribution'] ?? 'unique');
+        $hasHeaders = $hasHeaders ?? ($csvConfig['default_headers'] ?? true);
+
+        // Resolve file path
+        $filePath = $this->resolveCsvFilePath($filename, $csvConfig);
+
+        // Validate file exists if validation is enabled
+        $validateFiles = $csvConfig['validate_files'] ?? true;
+        if ($validateFiles && ! file_exists($filePath)) {
+            throw new VoltTestException("CSV data source file '{$filePath}' does not exist");
+        }
+
+        // Create and set data source configuration
+        // Note: DataSourceConfiguration will validate the file again, but only if it exists
+        $dataSourceConfig = new DataSourceConfiguration($filePath, $distribution, $hasHeaders);
+        $this->scenario->setDataSourceConfiguration($dataSourceConfig);
+
+        return $this;
+    }
+
+    /**
+     * Resolve the full path to a CSV file.
+     *
+     * @param string $filename
+     * @param array $csvConfig
+     * @return string
+     */
+    private function resolveCsvFilePath(string $filename, array $csvConfig): string
+    {
+        // If absolute path, use as-is
+        if (str_starts_with($filename, '/') || preg_match('/^[A-Z]:/i', $filename)) {
+            return $filename;
+        }
+
+        // Otherwise, use relative to configured path
+        $basePath = $csvConfig['path'] ?? storage_path('volttest/data');
+
+        return $basePath . DIRECTORY_SEPARATOR . $filename;
     }
 }

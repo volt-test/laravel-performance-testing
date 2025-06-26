@@ -8,7 +8,26 @@ For more information about the core VoltTest functionality, visit **[php.volt-te
 
 [![Latest Version on Packagist](https://img.shields.io/packagist/v/volt-test/laravel-performance-testing.svg?style=flat-square)](https://packagist.org/packages/volt-test/laravel-performance-testing) [![Total Downloads](https://img.shields.io/packagist/dt/volt-test/laravel-performance-testing.svg?style=flat-square)](https://packagist.org/packages/volt-test/laravel-performance-testing) [![GitHub Tests Action Status](https://img.shields.io/github/workflow/status/volt-test/laravel-performance-testing/run-tests?label=tests)](https://github.com/volt-test/laravel-performance-testing/actions?query=workflow%3Arun-tests+branch%3Amain)
 
-## About VoltTest
+## Table of Contents
+
+- [About Laravel Performance Testing VoltTest](#about-laravel-performance-testing-volttest)
+- [Requirements](#requirements)
+- [Features](#features)
+- [Installation](#installation)
+- [Configuration](#configuration)
+- [Quick Start](#quick-start)
+- [Creating Tests](#creating-tests)
+- [API Testing](#api-testing)
+- [CSV Data Sources](#csv-data-sources)
+- [Available Methods](#available-methods)
+- [Running Tests](#running-tests)
+- [Reports](#reports)
+- [Advanced Configuration](#advanced-configuration)
+- [Testing Tips](#testing-tips)
+- [Troubleshooting](#troubleshooting)
+- [Learn More](#learn-more)
+
+## About Laravel Performance Testing VoltTest
 
 This Laravel package extends the **[VoltTest PHP SDK](https://php.volt-test.com/)** with Laravel-specific functionality. While the core VoltTest PHP SDK provides the foundation for performance testing, this package adds:
 
@@ -32,13 +51,14 @@ For comprehensive documentation about VoltTest core features, load testing conce
 - 🎯 **URL Load Testing** - Direct URL testing without creating test classes
 - ⚡ **Artisan Commands** - Convenient CLI commands for test creation and execution
 - 🔧 **Configurable** - Flexible configuration options for different environments
+- 📄 **CSV Data Sources** - Load dynamic test data from CSV files for realistic performance testing
 
 ## Installation
 
 You can install the package via Composer:
 
 ```bash
-composer require volt-test/laravel-performance-testing
+composer require volt-test/laravel-performance-testing --dev
 ```
 
 The package will automatically register its service provider.
@@ -77,6 +97,14 @@ return [
     // Base URL
     'use_base_url' => env('VOLTTEST_USE_BASE_URL', true),
     'base_url' => env('VOLTTEST_BASE_URL', 'http://localhost:8000'),
+
+    // CSV Data Source Configuration
+    'csv_data' => [
+        'path' => storage_path('volttest/data'), // Default CSV location
+        'validate_files' => true,                // Check file exists before run
+        'default_distribution' => 'unique',      // Default distribution mode
+        'default_headers' => true,               // Default header setting
+    ],
 ];
 ```
 
@@ -497,6 +525,121 @@ Reports are automatically saved as JSON files in `storage/volttest/reports/`:
   }
 }
 ```
+
+## CSV Data Sources
+
+Load dynamic test data from CSV files for more realistic and scalable performance testing scenarios.
+
+### Quick Example
+
+1. **Create a CSV file** at `storage/volttest/data/users.csv`:
+
+```csv
+name,email,password
+John Doe,user1@example.com,password123
+Jane Smith,user2@example.com,password456
+Bob Wilson,user3@example.com,password789
+```
+
+2. **Use the data in your test**:
+
+```php
+<?php
+
+namespace App\VoltTests;
+
+use VoltTest\Laravel\Contracts\VoltTestCase;
+use VoltTest\Laravel\VoltTestManager;
+
+class RegisterTest implements VoltTestCase
+{
+    public function define(VoltTestManager $manager): void
+    {
+        // Configure CSV data source
+        $scenario = $manager->scenario('RegisterTest')
+            ->dataSource('users.csv');
+
+        // Step 1: Get Register Page
+        $scenario->step('Register')
+            ->get('/register')
+            ->header('Content-Type', 'application/x-www-form-urlencoded')
+            ->extractCsrfToken('token')
+            ->expectStatus(200);
+
+        // Step 2: Submit Registration
+        $scenario->step('Register')
+            ->post('/register', [
+                '_token' => '${token}',
+                'name' => '${name}',           // From CSV column
+                'email' => '${email}',         // From CSV column
+                'password' => '${password}',   // From CSV column
+                'password_confirmation' => '${password}',
+            ])
+            ->header('Content-Type', 'application/x-www-form-urlencoded')
+            ->expectStatus(302);
+
+        // Step 3: Access Dashboard
+        $scenario->step('Get Dashboard')
+            ->get('/dashboard')
+            ->header('Content-Type', 'text/html')
+            ->expectStatus(200);
+    }
+}
+```
+
+### Distribution Modes
+
+- **`unique`**: Each virtual user gets a different CSV row (recommended for user authentication)
+- **`random`**: Each virtual user gets a random CSV row (good for product browsing)
+- **`sequential`**: Virtual users cycle through CSV rows in order (predictable patterns)
+
+### E-commerce Example
+
+```php
+// CSV file: storage/volttest/data/products.csv
+// product_id,sku,name,price,category
+// 1,SKU001,Laptop,999.99,electronics
+// 2,SKU002,Mouse,29.99,accessories
+
+$scenario = $manager->scenario('Product Browsing')
+    ->dataSource('products.csv', 'random', true);
+
+$scenario->step('View Product')
+    ->get('/products/${product_id}')
+    ->expectStatus(200);
+
+$scenario->step('Add to Cart')
+    ->post('/cart/add', [
+        'product_id' => '${product_id}',
+        'quantity' => '1'
+    ])
+    ->expectStatus(200);
+```
+
+### Advanced CSV Usage
+
+```php
+// Multiple scenarios with different data sources
+$userScenario = $manager->scenario('User Actions')
+    ->dataSource('users.csv', 'unique')   // Each user gets different account
+    ->weight(70);                         // 70% of traffic
+
+$adminScenario = $manager->scenario('Admin Actions')
+    ->dataSource('admins.csv', 'random') // Admins can overlap
+    ->weight(30);                        // 30% of traffic
+```
+
+### 📖 Complete CSV Documentation
+
+For detailed information including:
+- File format requirements and validation
+- All distribution modes with use cases
+- Configuration options and file paths
+- Troubleshooting and performance tips
+- Advanced patterns and best practices
+
+**[Read the complete CSV Data Source guide →](docs/CSV_DATA_SOURCE.md)**
+
 
 ## Advanced Configuration
 
