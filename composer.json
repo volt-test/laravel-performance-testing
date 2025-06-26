@@ -3,7 +3,7 @@
   "description": "A Laravel package for performance testing with VoltTest",
   "type": "library",
   "license": "MIT",
-  "version": "0.0.5-beta",
+  "version": "0.0.6-beta",
   "keywords": [
     "volt-test",
     "laravel",
@@ -50,6 +50,7 @@
     }
   },
   "scripts": {
+    "post-autoload-dump" : "VoltTest\\Platform::getBinaryPath",
     "test": "phpunit",
     "phpstan": "phpstan analyse",
     "cs": "PHP_CS_FIXER_IGNORE_ENV=1 php-cs-fixer fix --diff",
@@ -64,6 +65,5 @@
   "config": {
     "sort-packages": true
   },
-  "minimum-stability": "dev",
-  "prefer-stable": true
+  "minimum-stability": "dev"
 }
