@@ -164,7 +164,8 @@ class LaravelScenario
         if (is_array($data)) {
             $isJson = $this->isJsonRequest($headers);
             if ($isJson) {
-                $data = json_encode($data);
+                $jsonData = json_encode($data);
+                $data = $jsonData !== false ? $jsonData : '';
                 $headers['Content-Type'] = $headers['Content-Type'] ?? 'application/json';
             } else {
                 $data = implode('&', array_map(
@@ -197,7 +198,8 @@ class LaravelScenario
         if (is_array($data)) {
             $isJson = $this->isJsonRequest($headers);
             if ($isJson) {
-                $data = json_encode($data);
+                $jsonData = json_encode($data);
+                $data = $jsonData !== false ? $jsonData : '';
                 $headers['Content-Type'] = $headers['Content-Type'] ?? 'application/json';
             } else {
                 $data = implode('&', array_map(
@@ -230,7 +232,8 @@ class LaravelScenario
         if (is_array($data)) {
             $isJson = $this->isJsonRequest($headers);
             if ($isJson) {
-                $data = json_encode($data);
+                $jsonData = json_encode($data);
+                $data = $jsonData !== false ? $jsonData : '';
                 $headers['Content-Type'] = $headers['Content-Type'] ?? 'application/json';
             } else {
                 $data = implode('&', array_map(
@@ -255,11 +258,37 @@ class LaravelScenario
      */
     private function isJsonRequest(array $headers): bool
     {
+        // Common JSON content types
+        $jsonContentTypes = [
+            'application/json',
+            'application/vnd.api+json',
+            'application/ld+json',
+            'application/hal+json',
+            'application/problem+json',
+        ];
+
         foreach ($headers as $key => $value) {
-            if (strtolower($key) === 'content-type' && stripos($value, 'application/json') !== false) {
-                return true;
+            $headerName = strtolower($key);
+
+            // Check Content-Type header for JSON
+            if ($headerName === 'content-type') {
+                foreach ($jsonContentTypes as $jsonType) {
+                    if (stripos($value, $jsonType) !== false) {
+                        return true;
+                    }
+                }
+            }
+
+            // Also consider Accept header requesting JSON
+            if ($headerName === 'accept') {
+                foreach ($jsonContentTypes as $jsonType) {
+                    if (stripos($value, $jsonType) !== false) {
+                        return true;
+                    }
+                }
             }
         }
+
         return false;
     }
 
