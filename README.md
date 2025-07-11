@@ -153,8 +153,9 @@ class UserTest implements VoltTestCase
                 'email' => 'john@example.com',
                 'password' => 'password',
                 'password_confirmation' => 'password',
+            ] , [
+            'Content-Type' => 'application/x-www-form-urlencoded' // Specify content type for form submission
             ])
-            ->header('Content-Type', 'application/x-www-form-urlencoded')
             ->expectStatus(201);
     }
 }
@@ -286,35 +287,48 @@ class ApiTest implements VoltTestCase
     {
         $scenario = $manager->scenario('API Performance Test');
 
-        // Login to get token
+        // Login to get token - Using headers directly in the request method
         $scenario->step('API Login')
             ->post('/api/login', [
                 'email' => 'test@example.com',
                 'password' => 'password',
+            ], [
+                'Accept' => 'application/json'  // Headers provided directly as third parameter
             ])
-            ->header('Accept', 'application/json')
             ->expectStatus(200)
             ->extractJson('auth_token', 'meta.token');
         // Extract the authentication token from the response
         // Reference: https://php.volt-test.com/docs/Steps#json-response
 
-        // Get user data
+        // Get user data - Using headers directly in the get method
         $scenario->step('Get User Data')
-            ->get('/api/user')
-            ->header('Authorization', 'Bearer ${auth_token}')
-            ->header('Accept', 'application/json')
+            ->get('/api/user', [
+                'Authorization' => 'Bearer ${auth_token}',
+                'Accept' => 'application/json'  // Headers provided directly in the GET method
+            ])
             ->expectStatus(200)
             ->extractJson('user_id', 'data.id');
 
-        // Update user
+        // Update user - Automatic JSON conversion based on Content-Type header
         $scenario->step('Update User')
             ->put('/api/user/${user_id}', [
                 'name' => 'Updated Name',
                 'email' => 'updated@example.com',
+            ], [
+                'Authorization' => 'Bearer ${auth_token}',
+                'Content-Type' => 'application/json'  // This automatically converts the array to JSON
+            ])
+            ->expectStatus(200);
+            
+        // Create new resource - Alternative way using header method
+        $scenario->step('Create Resource')
+            ->post('/api/resources', [
+                'title' => 'New Resource',
+                'description' => 'Resource description'
             ])
             ->header('Authorization', 'Bearer ${auth_token}')
-            ->header('Content-Type', 'application/json')
-            ->expectStatus(200);
+            ->header('Content-Type', 'application/json') // This also triggers automatic JSON conversion
+            ->expectStatus(201);
     }
 }
 ```
@@ -331,22 +345,32 @@ $scenario->step('Step Name')
     ->put('/path', $data)
     ->patch('/path', $data)
     ->delete('/path');
+    
+// HTTP Methods with headers parameter for automatic content type detection
+$scenario->step('Step Name')
+    ->get('/path', ['Accept' => 'application/json'])
+    ->post('/path', $data, ['Content-Type' => 'application/json']) // Array will be automatically converted to JSON
+    ->put('/path', $data, ['Content-Type' => 'application/json'])  // Array will be automatically converted to JSON
+    ->patch('/path', $data, ['Content-Type' => 'application/json']) // Array will be automatically converted to JSON
+    ->delete('/path', ['Accept' => 'application/json']);
 ```
 ### Headers Data
 
 ```php
-
 // Headers
 $scenario->step('Step Name')
     ->header('Authorization', 'Bearer token')
     ->header('Accept', 'application/json');
     
+// Content-Type headers trigger automatic data format conversion:
+$scenario->step('Step Name')
+    ->post('/api/resources', ['name' => 'Product', 'price' => 19.99])
+    ->header('Content-Type', 'application/json'); // Array data will be converted to JSON automatically
 ```
 
 ### Assertions
 
 ```php
-
 // Expectations
 $scenario->step('Step Name')
     ->expectStatus(200)
@@ -356,7 +380,6 @@ $scenario->step('Step Name')
 ### Extracting Data
 
 ```php
-
 // Data Extraction
 $scenario->step('Step Name')
     ->extractJson('variable_name', 'path.to.value') // Reference: https://php.volt-test.com/docs/Steps#json-response
@@ -454,7 +477,7 @@ The `--body` option supports different formats depending on content type:
 --body="This is plain text content"
 
 # XML (use with --content-type=application/xml)
---body='<?xml version="1.0"?><user><name>John</name><email>john@example.com</email></user>'
+--body='<?xml version="1.0"?><user><n>John</n><email>john@example.com</email></user>'
 ```
 
 ### Advanced Options
@@ -561,8 +584,9 @@ class RegisterTest implements VoltTestCase
 
         // Step 1: Get Register Page
         $scenario->step('Register')
-            ->get('/register')
-            ->header('Content-Type', 'application/x-www-form-urlencoded')
+            ->get('/register', [
+            'Content-Type' => 'application/x-www-form-urlencoded'
+            ])
             ->extractCsrfToken('token')
             ->expectStatus(200);
 
@@ -574,14 +598,16 @@ class RegisterTest implements VoltTestCase
                 'email' => '${email}',         // From CSV column
                 'password' => '${password}',   // From CSV column
                 'password_confirmation' => '${password}',
+            ],[
+                'Content-Type' => 'application/x-www-form-urlencoded' // Specify content type for form submission
             ])
-            ->header('Content-Type', 'application/x-www-form-urlencoded')
             ->expectStatus(302);
 
         // Step 3: Access Dashboard
         $scenario->step('Get Dashboard')
-            ->get('/dashboard')
-            ->header('Content-Type', 'text/html')
+            ->get('/dashboard', [
+            'Content-Type' => 'text/html',
+            ])
             ->expectStatus(200);
     }
 }
@@ -593,177 +619,90 @@ class RegisterTest implements VoltTestCase
 - **`random`**: Each virtual user gets a random CSV row (good for product browsing)
 - **`sequential`**: Virtual users cycle through CSV rows in order (predictable patterns)
 
-### E-commerce Example
-
-```php
-// CSV file: storage/volttest/data/products.csv
-// product_id,sku,name,price,category
-// 1,SKU001,Laptop,999.99,electronics
-// 2,SKU002,Mouse,29.99,accessories
-
-$scenario = $manager->scenario('Product Browsing')
-    ->dataSource('products.csv', 'random', true);
-
-$scenario->step('View Product')
-    ->get('/products/${product_id}')
-    ->expectStatus(200);
-
-$scenario->step('Add to Cart')
-    ->post('/cart/add', [
-        'product_id' => '${product_id}',
-        'quantity' => '1'
-    ])
-    ->expectStatus(200);
-```
-
-### Advanced CSV Usage
-
-```php
-// Multiple scenarios with different data sources
-$userScenario = $manager->scenario('User Actions')
-    ->dataSource('users.csv', 'unique')   // Each user gets different account
-    ->weight(70);                         // 70% of traffic
-
-$adminScenario = $manager->scenario('Admin Actions')
-    ->dataSource('admins.csv', 'random') // Admins can overlap
-    ->weight(30);                        // 30% of traffic
-```
-
-### 📖 Complete CSV Documentation
-
-For detailed information including:
-- File format requirements and validation
-- All distribution modes with use cases
-- Configuration options and file paths
-- Troubleshooting and performance tips
-- Advanced patterns and best practices
-
-**[Read the complete CSV Data Source guide →](docs/CSV_DATA_SOURCE.md)**
-
-
-## Advanced Configuration
-
-### Custom Test Paths
-
-```php
-// config/volttest.php
-'test_paths' => [
-    app_path('VoltTests'),
-    base_path('tests/Performance'),
-    base_path('custom/performance/tests'),
-],
-```
-
-### Custom Reports Path
-
-```php
-// config/volttest.php
-'reports_path' => storage_path('app/performance-reports'),
-'save_reports' => true,
-```
-
 ## Testing Tips
 
-### 1. Use Think Time
+### Best Practices
 
-Add realistic delays between requests:
+1. **Start Small**: Begin with a few virtual users and gradually increase
+2. **Watch Server Resources**: Monitor CPU, memory, and database connections
+3. **Use Realistic Data**: Incorporate CSV data sources for authentic testing
+4. **Extract and Reuse**: Extract tokens and IDs for multi-step scenarios
+5. **Separate Concerns**: Create multiple test classes for different features
+6. **Include Think Time**: Add realistic pauses between user actions
+7. **Test API and UI**: Cover both API endpoints and web interfaces
 
-```php
-$scenario->step('Browse Products')
-    ->get('/products')
-    ->thinkTime('3s'); // User reading time
-```
+### Optimizing Tests
 
-### 2. Extract Dynamic Values
-
-Handle dynamic content properly:
-
-```php
-$scenario->step('Login')
-    ->get('/login')
-    ->extractCsrfToken()
-    ->post('/login', [
-        '_token' => '${csrf_token}',
-        'email' => 'user@example.com',
-        'password' => 'password',
-    ]);
-```
-
-### 3. Test User Journeys
-
-Create realistic user flows:
-
-```php
-// Complete user journey
-$scenario->step('Homepage')->get('/');
-$scenario->step('Browse Products')->get('/products');
-$scenario->step('View Product')->get('/products/1');
-$scenario->step('Add to Cart')->post('/cart/add', $data);
-$scenario->step('Checkout')->get('/checkout');
-$scenario->step('Complete Order')->post('/orders', $orderData);
-```
-
-### 4. Handle Authentication
-
-For API testing with authentication:
-
-```php
-$scenario->step('Login')
-    ->post('/api/login', $credentials)
-    ->extractJson('token', 'access_token');
-
-$scenario->step('Protected Resource')
-    ->get('/api/protected')
-    ->header('Authorization', 'Bearer ${token}');
-```
+1. **Increase Virtual Users Gradually**: Start with 10-20 users and double until performance degrades
+2. **Add Ramp-up Time**: Allow virtual users to start gradually with `--ramp-up=30s`
+3. **Use CSV Data Sources**: Avoid hard-coding test data by using CSV files
+4. **Cache CSRF Tokens**: Extract tokens once and reuse where possible
+5. **Focus on Critical Paths**: Test your most important user journeys first
 
 ## Troubleshooting
 
 ### Common Issues
 
-**Route Discovery Not Working**
+#### Connection Errors
 
-- Make sure routes are properly registered
-- Check that middleware is correctly applied
-- Use `--select` option to manually choose routes
+- Ensure your application is running and accessible at the configured `base_url`
+- Check firewall settings and network connectivity
+- Try running with `--debug` to see detailed error information
 
-**Base URL Problems**
+#### Authentication Failures
 
-- Set `VOLTTEST_BASE_URL` to your application URL
-- Ensure your application is running during tests
-- For Docker setups, use the correct internal URL
+- Verify that credentials in your tests are valid
+- Check session and cookie handling in your application
+- Ensure proper headers are being sent (e.g., `Authorization`)
 
-### Debug Mode
+#### CSRF Token Issues
 
-Enable debugging to see HTTP request/response details:
+- Make sure your application is generating CSRF tokens
+- Check the CSS selector used in `extractCsrfToken()` matches your form
+- Try extracting the token manually with `extractHtml('token', 'meta[name="csrf-token"]', 'content')`
+
+#### Content Type Problems
+
+- If JSON or HTML responses aren't parsing correctly, check the content type headers
+- Use the `header('Content-Type', 'application/json')` or `header('Accept', 'application/json')` methods
+- For POST/PUT/PATCH requests with array data, adding a `Content-Type: application/json` header will automatically convert the array to JSON
+- When a response can't be properly parsed, you can use the `extractRegex()` method as a fallback to extract data using regular expressions
+
+#### Incorrect Parsing of Response Data
+
+- If `extractJson()` fails, check if the response is valid JSON using the debug option
+- For nested or complex JSON structures, use dot notation to access nested properties
+- When HTML doesn't contain the expected selectors, use `extractRegex()` as an alternative
+- If you're unsure about the response format, run with `--debug` and examine the actual response
+
+#### Rate Limiting
+
+- If your API enforces rate limiting, reduce the number of virtual users or increase the think time
+- Consider adding delays between requests with `thinkTime()` method
+
+### Debug Commands
 
 ```bash
-php artisan volttest:run --debug --stream
-```
+# Run with debug output
+php artisan volttest:run UserTest --debug
 
-Or in configuration:
+# Reduce users for debugging
+php artisan volttest:run UserTest --users=1 --debug
 
-```php
-'http_debug' => true,
-```
-
-## Testing
-
-Run the package tests:
-
-```bash
-composer test
+# Stream output in real-time
+php artisan volttest:run UserTest --stream --debug
 ```
 
 ## Learn More
 
-- **[Laravel tutorial for php sdk](https://php.volt-test.com/blog/stress-testing-laravel-with-volt-test-web-ui)** - Step-by-step guide to using VoltTest with Laravel
-- **[VoltTest PHP SDK Documentation](https://php.volt-test.com/)** - Complete guide to VoltTest core features
-- **[Performance Testing types](https://php.volt-test.com/blog/performance-testing-types)** - Load testing concepts and types
-- **[VoltTest API Reference](https://php.volt-test.com/docs/introduction)** - Full API documentation
+For more information about VoltTest and performance testing with Laravel, check out:
 
-## Credits
+- [VoltTest PHP SDK Documentation](https://php.volt-test.com/docs)
+- [Laravel Performance Testing Guide](https://php.volt-test.com/laravel)
+- [Load Testing Best Practices](https://php.volt-test.com/best-practices)
 
-- [Islam ElWafa](https://github.com/elwafa)
-- [VoltTest PHP SDK](https://php.volt-test.com/)
-- [All Contributors](https://github.com/volt-test/laravel-performance-testing/graphs/contributors)
+If you have questions, suggestions, or need help, please open an issue on our [GitHub repository](https://github.com/volt-test/laravel-performance-testing).
+
+## License
+
+This Laravel package is open-sourced software licensed under the [MIT license](LICENSE).
