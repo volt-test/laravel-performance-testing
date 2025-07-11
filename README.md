@@ -325,9 +325,11 @@ class ApiTest implements VoltTestCase
             ->post('/api/resources', [
                 'title' => 'New Resource',
                 'description' => 'Resource description'
+            ] , 
+            [
+                'Authorization' => 'Bearer ${auth_token}',
+                'Content-Type' => 'application/json' // This automatically converts the array to JSON
             ])
-            ->header('Authorization', 'Bearer ${auth_token}')
-            ->header('Content-Type', 'application/json') // This also triggers automatic JSON conversion
             ->expectStatus(201);
     }
 }
@@ -364,8 +366,7 @@ $scenario->step('Step Name')
     
 // Content-Type headers trigger automatic data format conversion:
 $scenario->step('Step Name')
-    ->post('/api/resources', ['name' => 'Product', 'price' => 19.99])
-    ->header('Content-Type', 'application/json'); // Array data will be converted to JSON automatically
+    ->post('/api/resources', ['name' => 'Product', 'price' => 19.99] , ['Content-Type'=>'application/json']); // This will automatically convert the array to JSON
 ```
 
 ### Assertions
