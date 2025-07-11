@@ -95,10 +95,17 @@ class StepCodeGenerator
         $method = strtolower($method);
         $fullUrl = '/' . ltrim($uri, '/');
         $isWeb = $type === 'web';
+
+        // Headers as third parameter for automatic content type detection
         $headers = $isWeb
-            ? "->header('Content-Type', 'application/x-www-form-urlencoded')"
-            : "->header('Authorization', 'Bearer \${token}')";
+            ? ", ['Content-Type' => 'application/x-www-form-urlencoded']"
+            : ", ['Authorization' => 'Bearer \${token}', 'Content-Type' => 'application/json', 'Accept' => 'application/json']";
+
         $csrf = $isWeb ? "            '_token' => '\${csrf_token}',\n" : '';
+
+        $body = $isWeb
+            ? "            '_method' => '$method',\n"
+            : '';
 
         return match ($method) {
             'post' => <<<PHP
@@ -106,35 +113,27 @@ class StepCodeGenerator
         \$scenario->step('$stepName')
             ->post('$fullUrl', [
 $csrf                // Add form fields here
-            ])
-            $headers
+            ]$headers)
             ->expectStatus(200);
 PHP,
             'put', 'patch' => <<<PHP
         // Step $stepNumber : $stepName
         \$scenario->step('$stepName')
             ->$method('$fullUrl', [
-                '_method' => '$method',
-$csrf                // Add form fields here
-            ])
-            $headers
+$csrf$body                // Add form fields here
+            ]$headers)
             ->expectStatus(200);
 PHP,
             'delete' => <<<PHP
         // Step $stepNumber : $stepName
         \$scenario->step('$stepName')
-            ->post('$fullUrl', [
-                '_method' => 'DELETE',
-$csrf                // Add form fields here
-            ])
-            $headers
+            ->delete('$fullUrl'$headers)
             ->expectStatus(200);
 PHP,
             default => <<<PHP
         // Step $stepNumber : $stepName
         \$scenario->step('$stepName')
-            ->get('$fullUrl')
-            $headers
+            ->get('$fullUrl'$headers)
             ->expectStatus(200);
 PHP
         };

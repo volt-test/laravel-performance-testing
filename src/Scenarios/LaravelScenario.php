@@ -162,11 +162,18 @@ class LaravelScenario
         $this->ensureStepExists();
 
         if (is_array($data)) {
-            $data = implode('&', array_map(
-                fn ($key, $value) => "$key=$value",
-                array_keys($data),
-                $data
-            ));
+            $isJson = $this->isJsonRequest($headers);
+            if ($isJson) {
+                $jsonData = json_encode($data);
+                $data = $jsonData !== false ? $jsonData : '';
+                $headers['Content-Type'] = $headers['Content-Type'] ?? 'application/json';
+            } else {
+                $data = implode('&', array_map(
+                    fn ($key, $value) => "$key=$value",
+                    array_keys($data),
+                    $data
+                ));
+            }
         }
 
         $this->currentStep->post($this->getUrl($url), $data);
@@ -189,11 +196,18 @@ class LaravelScenario
         $this->ensureStepExists();
 
         if (is_array($data)) {
-            $data = implode('&', array_map(
-                fn ($key, $value) => "$key=$value",
-                array_keys($data),
-                $data
-            ));
+            $isJson = $this->isJsonRequest($headers);
+            if ($isJson) {
+                $jsonData = json_encode($data);
+                $data = $jsonData !== false ? $jsonData : '';
+                $headers['Content-Type'] = $headers['Content-Type'] ?? 'application/json';
+            } else {
+                $data = implode('&', array_map(
+                    fn ($key, $value) => "$key=$value",
+                    array_keys($data),
+                    $data
+                ));
+            }
         }
 
         $this->currentStep->put($this->getUrl($url), $data);
@@ -216,17 +230,66 @@ class LaravelScenario
         $this->ensureStepExists();
 
         if (is_array($data)) {
-            $data = implode('&', array_map(
-                fn ($key, $value) => "$key=$value",
-                array_keys($data),
-                $data
-            ));
+            $isJson = $this->isJsonRequest($headers);
+            if ($isJson) {
+                $jsonData = json_encode($data);
+                $data = $jsonData !== false ? $jsonData : '';
+                $headers['Content-Type'] = $headers['Content-Type'] ?? 'application/json';
+            } else {
+                $data = implode('&', array_map(
+                    fn ($key, $value) => "$key=$value",
+                    array_keys($data),
+                    $data
+                ));
+            }
         }
 
         $this->currentStep->patch($this->getUrl($url), $data);
         $this->addHeaders($headers);
 
         return $this;
+    }
+
+    /**
+     * Check if the request should be treated as JSON based on headers
+     *
+     * @param array $headers
+     * @return bool
+     */
+    private function isJsonRequest(array $headers): bool
+    {
+        // Common JSON content types
+        $jsonContentTypes = [
+            'application/json',
+            'application/vnd.api+json',
+            'application/ld+json',
+            'application/hal+json',
+            'application/problem+json',
+        ];
+
+        foreach ($headers as $key => $value) {
+            $headerName = strtolower($key);
+
+            // Check Content-Type header for JSON
+            if ($headerName === 'content-type') {
+                foreach ($jsonContentTypes as $jsonType) {
+                    if (stripos($value, $jsonType) !== false) {
+                        return true;
+                    }
+                }
+            }
+
+            // Also consider Accept header requesting JSON
+            if ($headerName === 'accept') {
+                foreach ($jsonContentTypes as $jsonType) {
+                    if (stripos($value, $jsonType) !== false) {
+                        return true;
+                    }
+                }
+            }
+        }
+
+        return false;
     }
 
     /**
