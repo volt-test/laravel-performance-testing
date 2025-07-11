@@ -16,7 +16,7 @@ class {{ class }} implements VoltTestCase
     public function define(VoltTestManager $manager): void
     {
         // Define your test scenario
-        $scenario = $manager->scenario('{{ class }}', 'Performance test for application routes');
+        $scenario = $manager->scenario('{{ class }}');
 
 {{ routes }}
     }

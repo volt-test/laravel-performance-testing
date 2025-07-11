@@ -565,4 +565,151 @@ class LaravelScenarioTest extends TestCase
 
         $this->assertSame($this->laravelScenario, $result);
     }
+
+    public function test_it_performs_post_request_with_json_content_type(): void
+    {
+        $this->mockScenario
+            ->shouldReceive('step')
+            ->andReturn($this->mockStep);
+
+        $data = ['name' => 'John', 'email' => 'john@example.com'];
+        $expectedJsonData = json_encode($data);
+
+        $this->mockStep
+            ->shouldReceive('post')
+            ->with('http://localhost:8000/users', $expectedJsonData)
+            ->once()
+            ->andReturnSelf();
+
+        $this->mockStep
+            ->shouldReceive('header')
+            ->with('Content-Type', 'application/json')
+            ->once()
+            ->andReturnSelf();
+
+        $result = $this->laravelScenario
+            ->step('Test Step')
+            ->post('/users', $data, ['Content-Type' => 'application/json']);
+
+        $this->assertSame($this->laravelScenario, $result);
+    }
+
+    public function test_it_performs_put_request_with_json_content_type(): void
+    {
+        $this->mockScenario
+            ->shouldReceive('step')
+            ->andReturn($this->mockStep);
+
+        $data = ['name' => 'Jane', 'role' => 'admin'];
+        $expectedJsonData = json_encode($data);
+
+        $this->mockStep
+            ->shouldReceive('put')
+            ->with('http://localhost:8000/users/1', $expectedJsonData)
+            ->once()
+            ->andReturnSelf();
+
+        $this->mockStep
+            ->shouldReceive('header')
+            ->with('Content-Type', 'application/json')
+            ->once()
+            ->andReturnSelf();
+
+        $result = $this->laravelScenario
+            ->step('Test Step')
+            ->put('/users/1', $data, ['Content-Type' => 'application/json']);
+
+        $this->assertSame($this->laravelScenario, $result);
+    }
+
+    public function test_it_performs_patch_request_with_json_content_type(): void
+    {
+        $this->mockScenario
+            ->shouldReceive('step')
+            ->andReturn($this->mockStep);
+
+        $data = ['name' => 'Jane Updated'];
+        $expectedJsonData = json_encode($data);
+
+        $this->mockStep
+            ->shouldReceive('patch')
+            ->with('http://localhost:8000/users/1', $expectedJsonData)
+            ->once()
+            ->andReturnSelf();
+
+        $this->mockStep
+            ->shouldReceive('header')
+            ->with('Content-Type', 'application/json')
+            ->once()
+            ->andReturnSelf();
+
+        $result = $this->laravelScenario
+            ->step('Test Step')
+            ->patch('/users/1', $data, ['Content-Type' => 'application/json']);
+
+        $this->assertSame($this->laravelScenario, $result);
+    }
+
+    public function test_it_detects_various_json_content_types(): void
+    {
+        $this->mockScenario
+            ->shouldReceive('step')
+            ->andReturn($this->mockStep);
+
+        $data = ['name' => 'John'];
+        $expectedJsonData = json_encode($data);
+
+        // Test with application/vnd.api+json content type
+        $this->mockStep
+            ->shouldReceive('post')
+            ->with('http://localhost:8000/users', $expectedJsonData)
+            ->once()
+            ->andReturnSelf();
+
+        $this->mockStep
+            ->shouldReceive('header')
+            ->with('Content-Type', 'application/vnd.api+json')
+            ->once()
+            ->andReturnSelf();
+
+        $result = $this->laravelScenario
+            ->step('Test Step')
+            ->post('/users', $data, ['Content-Type' => 'application/vnd.api+json']);
+
+        $this->assertSame($this->laravelScenario, $result);
+    }
+
+    public function test_it_detects_json_in_accept_header(): void
+    {
+        $this->mockScenario
+            ->shouldReceive('step')
+            ->andReturn($this->mockStep);
+
+        $data = ['name' => 'John'];
+        $expectedJsonData = json_encode($data);
+
+        $this->mockStep
+            ->shouldReceive('post')
+            ->with('http://localhost:8000/users', $expectedJsonData)
+            ->once()
+            ->andReturnSelf();
+
+        $this->mockStep
+            ->shouldReceive('header')
+            ->with('Accept', 'application/json')
+            ->once()
+            ->andReturnSelf();
+
+        $this->mockStep
+            ->shouldReceive('header')
+            ->with('Content-Type', 'application/json')
+            ->once()
+            ->andReturnSelf();
+
+        $result = $this->laravelScenario
+            ->step('Test Step')
+            ->post('/users', $data, ['Accept' => 'application/json']);
+
+        $this->assertSame($this->laravelScenario, $result);
+    }
 }

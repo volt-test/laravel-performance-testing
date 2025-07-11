@@ -46,8 +46,7 @@ class StepCodeGeneratorTest extends TestCase
         $expected = <<<'PHP'
         // Step 1 : Users.index
         $scenario->step('Users.index')
-            ->get('/users')
-            ->header('Content-Type', 'application/x-www-form-urlencoded')
+            ->get('/users', ['Content-Type' => 'application/x-www-form-urlencoded'])
             ->expectStatus(200);
 PHP;
 
@@ -76,8 +75,7 @@ PHP;
             ->post('/users', [
             '_token' => '${csrf_token}',
                 // Add form fields here
-            ])
-            ->header('Content-Type', 'application/x-www-form-urlencoded')
+            ], ['Content-Type' => 'application/x-www-form-urlencoded'])
             ->expectStatus(200);
 PHP;
 
@@ -104,11 +102,10 @@ PHP;
         // Step 1 : Users.update
         $scenario->step('Users.update')
             ->put('/users/${user}', [
-                '_method' => 'put',
             '_token' => '${csrf_token}',
+            '_method' => 'put',
                 // Add form fields here
-            ])
-            ->header('Content-Type', 'application/x-www-form-urlencoded')
+            ], ['Content-Type' => 'application/x-www-form-urlencoded'])
             ->expectStatus(200);
 PHP;
 
@@ -135,11 +132,10 @@ PHP;
         // Step 1 : Users.patch
         $scenario->step('Users.patch')
             ->patch('/users/${user}', [
-                '_method' => 'patch',
             '_token' => '${csrf_token}',
+            '_method' => 'patch',
                 // Add form fields here
-            ])
-            ->header('Content-Type', 'application/x-www-form-urlencoded')
+            ], ['Content-Type' => 'application/x-www-form-urlencoded'])
             ->expectStatus(200);
 PHP;
 
@@ -165,12 +161,7 @@ PHP;
         $expected = <<<'PHP'
         // Step 1 : Users.destroy
         $scenario->step('Users.destroy')
-            ->post('/users/${user}', [
-                '_method' => 'DELETE',
-            '_token' => '${csrf_token}',
-                // Add form fields here
-            ])
-            ->header('Content-Type', 'application/x-www-form-urlencoded')
+            ->delete('/users/${user}', ['Content-Type' => 'application/x-www-form-urlencoded'])
             ->expectStatus(200);
 PHP;
 
@@ -198,12 +189,11 @@ PHP;
         $scenario->step('Api.users.store')
             ->post('/api/users', [
                 // Add form fields here
-            ])
-            ->header('Authorization', 'Bearer ${token}')
+            ], ['Authorization' => 'Bearer ${token}', 'Content-Type' => 'application/json', 'Accept' => 'application/json'])
             ->expectStatus(200);
 PHP;
 
-        $this->assertStringContainsString("->header('Authorization', 'Bearer \${token}')", $result);
+        $this->assertEquals($expected, $result);
         $this->assertStringNotContainsString("'_token' => '\${csrf_token}',", $result);
     }
 
@@ -223,7 +213,7 @@ PHP;
         $result = $this->generator->generate($routes);
 
         // Assert
-        $this->assertStringContainsString("->get('/users/\${user}/posts/\${post}/comments/\${comment}')", $result);
+        $this->assertStringContainsString("->get('/users/\${user}/posts/\${post}/comments/\${comment}',", $result);
     }
 
     public function test_it_handles_optional_route_parameters(): void
@@ -242,7 +232,7 @@ PHP;
         $result = $this->generator->generate($routes);
 
         // Assert
-        $this->assertStringContainsString("->get('/posts/\${post}/comments/\${comment}')", $result);
+        $this->assertStringContainsString("->get('/posts/\${post}/comments/\${comment}',", $result);
     }
 
     public function test_it_generates_step_name_from_route_name(): void
@@ -318,7 +308,7 @@ PHP;
         $result = $this->generator->generate($routes);
 
         // Assert
-        $this->assertStringContainsString("->get('/test-route')", $result);
+        $this->assertStringContainsString("->get('/test-route',", $result);
     }
 
     public function test_it_handles_routes_with_only_non_preferred_methods(): void
@@ -338,7 +328,7 @@ PHP;
 
         // Assert
         // Should fall back to first method (get)
-        $this->assertStringContainsString("->get('/test-route')", $result);
+        $this->assertStringContainsString("->get('/test-route',", $result);
     }
 
     public function test_it_generates_multiple_steps_for_multiple_routes(): void
@@ -393,7 +383,7 @@ PHP;
         $result = $this->generator->generate($routes);
 
         // Assert
-        $this->assertStringContainsString("->get('/users/profile')", $result);
+        $this->assertStringContainsString("->get('/users/profile',", $result);
     }
 
     public function test_it_preserves_leading_slash_when_present(): void
@@ -412,9 +402,9 @@ PHP;
         $result = $this->generator->generate($routes);
 
         // Assert
-        $this->assertStringContainsString("->get('/users/profile')", $result);
+        $this->assertStringContainsString("->get('/users/profile',", $result);
         // Make sure we don't get double slashes
-        $this->assertStringNotContainsString("->get('//users/profile')", $result);
+        $this->assertStringNotContainsString("->get('//users/profile',", $result);
     }
 
     public function test_it_handles_root_route(): void
@@ -433,7 +423,7 @@ PHP;
         $result = $this->generator->generate($routes);
 
         // Assert
-        $this->assertStringContainsString("->get('/')", $result);
+        $this->assertStringContainsString("->get('/',", $result);
     }
 
     public function test_it_handles_empty_uri_gracefully(): void
@@ -452,7 +442,7 @@ PHP;
         $result = $this->generator->generate($routes);
 
         // Assert
-        $this->assertStringContainsString("->get('/')", $result);
+        $this->assertStringContainsString("->get('/',", $result);
     }
 
     public function test_it_handles_missing_type_field(): void
@@ -472,7 +462,7 @@ PHP;
 
         // Assert
         // Should default to web type (with CSRF)
-        $this->assertStringContainsString("->header('Content-Type', 'application/x-www-form-urlencoded')", $result);
+        $this->assertStringContainsString("['Content-Type' => 'application/x-www-form-urlencoded']", $result);
     }
 
     public function test_it_generates_correct_comment_format(): void
@@ -520,8 +510,7 @@ PHP;
         $this->assertStringStartsWith('        // Step', $lines[0]);
         $this->assertStringStartsWith("        \$scenario->step", $lines[1]);
         $this->assertStringStartsWith('            ->post', $lines[2]);
-        $this->assertStringStartsWith('            ->header', $lines[6]);
-        $this->assertStringStartsWith('            ->expectStatus', $lines[7]);
+        $this->assertStringStartsWith('            ->expectStatus', $lines[6]);
     }
 
     public function test_it_handles_complex_nested_route_parameters(): void
@@ -634,10 +623,9 @@ PHP;
         $apiResult = $this->generator->generate([$apiRoute]);
 
         // Assert
-        $this->assertStringContainsString("->header('Content-Type', 'application/x-www-form-urlencoded')", $webResult);
-        $this->assertStringContainsString("->header('Authorization', 'Bearer \${token}')", $apiResult);
+        $this->assertStringContainsString(", ['Content-Type' => 'application/x-www-form-urlencoded'])", $webResult);
+        $this->assertStringContainsString(", ['Authorization' => 'Bearer \${token}', 'Content-Type' => 'application/json', 'Accept' => 'application/json'])", $apiResult);
 
         $this->assertStringNotContainsString("Authorization", $webResult);
-        $this->assertStringNotContainsString("Content-Type", $apiResult);
     }
 }
