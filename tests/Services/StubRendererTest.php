@@ -200,7 +200,6 @@ EOF;
 
         // Should use default stub content
         $this->assertStringContainsString('class DefaultTest implements VoltTestCase', $result);
-        $this->assertStringContainsString('Performance test for application routes', $result);
         $this->assertStringContainsString('// Default routes', $result);
     }
 

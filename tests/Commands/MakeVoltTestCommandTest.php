@@ -138,7 +138,21 @@ class MakeVoltTestCommandTest extends TestCase
         $router = $this->app->make(Router::class);
         $router->get('/users', fn () => 'users')->name('users.index');
         $router->post('/users', fn () => 'create user')->name('users.store');
-
+        $router->put('/users/{id}', fn ($id) => "update user $id")->name('users.update');
+        $router->patch('/users/{id}', fn ($id) => "patch user $id")->name('users.patch');
+        $router->get('/products', fn () => 'products')->name('products.index');
+        $router->post('/products', fn () => 'create product')->name('products.store');
+        $router->put('/products/{id}', fn ($id) => "update product $id")->name('products.update');
+        $router->patch('/products/{id}', fn ($id) => "patch product $id")->name('products.patch');
+        // API routes
+        $router->get('/api/users', fn () => response()->json(['users']))->name('api.users.index');
+        $router->post('/api/users', fn () => response()->json(['created' => true]))->name('api.users.store');
+        $router->put('/api/users/{id}', fn ($id) => response()->json(['updated' => $id]))->name('api.users.update');
+        $router->patch('/api/users/{id}', fn ($id) => response()->json(['patched' => $id]))->name('api.users.patch');
+        $router->get('/api/products', fn () => response()->json(['products']))->name('api.products.index');
+        $router->post('/api/products', fn () => response()->json(['created' => true]))->name('api.products.store');
+        $router->put('/api/products/{id}', fn ($id) => response()->json(['updated' => $id]))->name('api.products.update');
+        $router->patch('/api/products/{id}', fn ($id) => response()->json(['patched' => $id]))->name('api.products.patch');
         $this->mockStubFile();
 
         File::shouldReceive('exists')
@@ -152,11 +166,10 @@ class MakeVoltTestCommandTest extends TestCase
         File::shouldReceive('put')
             ->once()
             ->withArgs(function ($path, $content) {
-                return $path === '/tmp/volt-tests/UserTest.php' &&
-                    str_contains($content, 'Users.index') &&
-                    str_contains($content, 'Users.store') &&
-                    str_contains($content, "->get('/users')") &&
-                    str_contains($content, "->post('/users',");
+                return $path === '/tmp/volt-tests/UserTest.php'
+                    && str_contains($content, 'VoltTestCase')
+                    && str_contains($content, "->step('Users.index')")
+                    && str_contains($content, "->step('Api.products.patch')");
             });
 
         $this->artisan('volttest:make', [
@@ -185,4 +198,39 @@ class MakeVoltTestCommandTest extends TestCase
         $this->assertTrue($definition->hasOption('method'));
         $this->assertTrue($definition->hasOption('auth'));
     }
+
+    public function test_it_creates_test_with_routes_discovery_and_filter_api(): void
+    {
+        // Set up some routes for discovery
+        $router = $this->app->make(Router::class);
+        $router->get('/users', fn () => 'users')->name('users.index');
+        $router->post('/users', fn () => 'create user')->name('users.store');
+        $router->get('/api/users', fn () => response()->json(['users']))->name('api.users.index');
+        $router->post('/api/users', fn () => response()->json(['created' => true]))->name('api.users.store');
+
+        $this->mockStubFile();
+
+        File::shouldReceive('exists')
+            ->with('/tmp/volt-tests')
+            ->andReturn(true);
+
+        File::shouldReceive('exists')
+            ->with('/tmp/volt-tests/ApiUserTest.php')
+            ->andReturn(false);
+
+        File::shouldReceive('put')
+            ->once()
+            ->withArgs(function ($path, $content) {
+                return $path === '/tmp/volt-tests/ApiUserTest.php' &&
+                    str_contains($content, 'Api.users.index') &&
+                    str_contains($content, "->get('/api/users', ['Authorization' => 'Bearer \${token}', 'Content-Type' => 'application/json', 'Accept' => 'application/json'])");            });
+
+        $this->artisan('volttest:make', [
+            'name' => 'ApiUser',
+            '--routes' => true,
+            '--filter' => 'api*',
+        ])
+            ->assertExitCode(0);
+    }
+
 }

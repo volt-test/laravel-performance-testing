@@ -103,6 +103,10 @@ class StepCodeGenerator
 
         $csrf = $isWeb ? "            '_token' => '\${csrf_token}',\n" : '';
 
+        $body = $isWeb
+            ? "            '_method' => '$method',\n"
+            : '';
+
         return match ($method) {
             'post' => <<<PHP
         // Step $stepNumber : $stepName
@@ -116,7 +120,7 @@ PHP,
         // Step $stepNumber : $stepName
         \$scenario->step('$stepName')
             ->$method('$fullUrl', [
-                // Add fields here
+$csrf$body                // Add form fields here
             ]$headers)
             ->expectStatus(200);
 PHP,
