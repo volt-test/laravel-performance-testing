@@ -619,6 +619,19 @@ class RegisterTest implements VoltTestCase
 - **`random`**: Each virtual user gets a random CSV row (good for product browsing)
 - **`sequential`**: Virtual users cycle through CSV rows in order (predictable patterns)
 
+
+### 📖 Complete CSV Documentation
+
+For detailed information including:
+- File format requirements and validation
+- All distribution modes with use cases
+- Configuration options and file paths
+- Troubleshooting and performance tips
+- Advanced patterns and best practices
+
+**[Read the complete CSV Data Source guide →](docs/CSV_DATA_SOURCE.md)**
+
+
 ## Testing Tips
 
 ### Best Practices
