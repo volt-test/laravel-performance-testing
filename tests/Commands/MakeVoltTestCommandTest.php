@@ -223,7 +223,8 @@ class MakeVoltTestCommandTest extends TestCase
             ->withArgs(function ($path, $content) {
                 return $path === '/tmp/volt-tests/ApiUserTest.php' &&
                     str_contains($content, 'Api.users.index') &&
-                    str_contains($content, "->get('/api/users', ['Authorization' => 'Bearer \${token}', 'Content-Type' => 'application/json', 'Accept' => 'application/json'])");            });
+                    str_contains($content, "->get('/api/users', ['Authorization' => 'Bearer \${token}', 'Content-Type' => 'application/json', 'Accept' => 'application/json'])");
+            });
 
         $this->artisan('volttest:make', [
             'name' => 'ApiUser',
@@ -232,5 +233,4 @@ class MakeVoltTestCommandTest extends TestCase
         ])
             ->assertExitCode(0);
     }
-
 }
