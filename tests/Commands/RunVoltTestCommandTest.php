@@ -73,8 +73,8 @@ class RunVoltTestCommandTest extends TestCase
         $app['config']->set('volttest.reports_path', '/tmp/reports');
     }
 
-    /** @test */
-    public function it_configures_virtual_users_when_option_provided(): void
+    
+    public function test_configures_virtual_users_when_option_provided(): void
     {
         $this->mockValidator
             ->shouldReceive('validateVirtualUsers')
@@ -100,8 +100,7 @@ class RunVoltTestCommandTest extends TestCase
             ->assertExitCode(0);
     }
 
-    /** @test */
-    public function it_configures_duration_when_option_provided(): void
+    public function test_configures_duration_when_option_provided(): void
     {
         $this->mockValidator
             ->shouldReceive('validateVirtualUsers')
@@ -131,8 +130,8 @@ class RunVoltTestCommandTest extends TestCase
             ->assertExitCode(0);
     }
 
-    /** @test */
-    public function it_enables_debug_mode_when_option_provided(): void
+    
+    public function test_enables_debug_mode_when_option_provided(): void
     {
         $this->mockValidator
             ->shouldReceive('validateVirtualUsers')
@@ -154,8 +153,8 @@ class RunVoltTestCommandTest extends TestCase
             ->assertExitCode(0);
     }
 
-    /** @test */
-    public function it_runs_url_test_when_url_option_provided(): void
+    
+    public function test_runs_url_test_when_url_option_provided(): void
     {
         $this->mockValidator
             ->shouldReceive('validateVirtualUsers')
@@ -198,8 +197,8 @@ class RunVoltTestCommandTest extends TestCase
             ->assertExitCode(0);
     }
 
-    /** @test */
-    public function it_runs_specific_test_class_when_provided(): void
+    
+    public function test_runs_specific_test_class_when_provided(): void
     {
         $this->mockValidator
             ->shouldReceive('validateVirtualUsers')
@@ -235,8 +234,8 @@ class RunVoltTestCommandTest extends TestCase
             ->assertExitCode(0);
     }
 
-    /** @test */
-    public function it_discovers_all_test_classes_when_no_specific_test_provided(): void
+    
+    public function test_discovers_all_test_classes_when_no_specific_test_provided(): void
     {
         $this->mockValidator
             ->shouldReceive('validateVirtualUsers')
@@ -284,8 +283,8 @@ class RunVoltTestCommandTest extends TestCase
             ->assertExitCode(0);
     }
 
-    /** @test */
-    public function it_uses_custom_path_when_provided(): void
+    
+    public function test_uses_custom_path_when_provided(): void
     {
         $this->mockValidator
             ->shouldReceive('validateVirtualUsers')
@@ -322,8 +321,8 @@ class RunVoltTestCommandTest extends TestCase
             ->assertExitCode(0);
     }
 
-    /** @test */
-    public function it_handles_url_test_with_custom_options(): void
+    
+    public function test_handles_url_test_with_custom_options(): void
     {
         $url = 'https://api.example.com/users';
 
@@ -366,8 +365,8 @@ class RunVoltTestCommandTest extends TestCase
             ->assertExitCode(0);
     }
 
-    /** @test */
-    public function it_handles_invalid_json_headers_gracefully(): void
+    
+    public function test_handles_invalid_json_headers_gracefully(): void
     {
         $url = 'https://example.com';
 
