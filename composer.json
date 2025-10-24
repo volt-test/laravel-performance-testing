@@ -3,7 +3,7 @@
   "description": "A Laravel package for performance testing with VoltTest",
   "type": "library",
   "license": "MIT",
-  "version": "v1.1.0",
+  "version": "v1.2.0",
   "keywords": [
     "volt-test",
     "laravel",
@@ -38,6 +38,9 @@
     "psr-4": {
       "VoltTest\\Laravel\\Tests\\": "tests/"
     }
+  },
+  "suggest": {
+    "phpunit/phpunit": "Required for PHPUnit integration features."
   },
   "extra": {
     "laravel": {
