@@ -39,9 +39,6 @@
       "VoltTest\\Laravel\\Tests\\": "tests/"
     }
   },
-  "suggest": {
-    "phpunit/phpunit": "Required for PHPUnit integration features."
-  },
   "extra": {
     "laravel": {
       "providers": [
