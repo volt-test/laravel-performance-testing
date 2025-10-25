@@ -1,0 +1,19 @@
+<?php
+
+declare(strict_types=1);
+
+namespace VoltTest\Laravel\Testing;
+
+use PHPUnit\Runner\Extension\Extension;
+use PHPUnit\Runner\Extension\Facade;
+use PHPUnit\Runner\Extension\ParameterCollection;
+use PHPUnit\TextUI\Configuration\Configuration;
+
+class VoltTestExtension implements Extension
+{
+    public function bootstrap(Configuration $configuration, Facade $facade, ParameterCollection $parameters): void
+    {
+        // TODO: Implement bootstrap() method.
+        // Register VoltTest related listeners or initialize VoltTest settings
+    }
+}
