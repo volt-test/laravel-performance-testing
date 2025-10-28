@@ -7,6 +7,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+- New Feature Run performance test with phpunit by @elwafa
+- Add Changelog file by @elwafa
+
+### Fixed
+- Fix: Remove @test annotation from RunVoltTestCommandTest and TestConfigurationValidatorTest
+
 ## [1.1.0] - 2024-07-11
 
 ### Changed
