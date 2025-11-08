@@ -20,7 +20,8 @@
   "require": {
     "php": "^8.2",
     "illuminate/support": "^10.0|^11.0|^12.0",
-    "volt-test/php-sdk": "^1.0.0"
+    "volt-test/php-sdk": "^1.0.0",
+    "ext-pcntl": "*"
   },
   "require-dev": {
     "orchestra/testbench": "^10.0",
