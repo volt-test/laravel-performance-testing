@@ -8,8 +8,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
-- New Feature Run performance test with phpunit by @elwafa
-- Add Changelog file by @elwafa
+- New Feature Run performance test with phpunit
+- Add Changelog file
+- IntegrationVoltTestCase for managing server lifecycle in tests
+- ServerManager and ServerManagerTest for managing PHP development server
+- ServerRegistry and ServerRegistryTest for managing server instances in tests
+- Performance test assertions to VoltTestAssertions trait
+- ext-pcntl requirement to composer.json
+- Strict types declaration to ServerManagerTest for improved type safety
+
+### Changed
+- Update CI and tests configuration to trigger on all branches
+- Refactor phpunit.xml to enhance test reporting and deprecation handling
+- Update phpunit.xml for PHPUnit 11.0 compatibility and improve configuration
 
 ### Fixed
 - Fix: Remove @test annotation from RunVoltTestCommandTest and TestConfigurationValidatorTest
