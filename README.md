@@ -645,10 +645,10 @@ Run VoltTest performance tests within your PHPUnit test suite with automated ser
 namespace Tests\Performance;
 
 use VoltTest\Laravel\Contracts\VoltTestCase;
-use VoltTest\Laravel\Testing\IntegrationVoltTestCase;
+use VoltTest\Laravel\Testing\PerformanceTestCase;
 use VoltTest\Laravel\VoltTestManager;
 
-class HomePagePerformanceTest extends IntegrationVoltTestCase
+class HomePagePerformanceTest extends PerformanceTestCase
 {
     protected static bool $enableServerManagement = true;
 
@@ -680,7 +680,7 @@ class HomePagePerformanceTest extends IntegrationVoltTestCase
 
 ### Key Features
 
-- **IntegrationVoltTestCase** - Base test class for PHPUnit integration
+- **PerformanceTestCase** - Base test class for PHPUnit integration
 - **Automatic Server Management** - Built-in PHP development server lifecycle management
 - **Performance Assertions** - Specialized assertions for response times, success rates, and throughput
 - **Quick Helpers** - Simple methods for common load testing scenarios
@@ -764,9 +764,9 @@ class RegistrationTest implements VoltTestCase
 namespace Tests\Performance;
 
 use App\VoltTests\RegistrationTest;
-use VoltTest\Laravel\Testing\IntegrationVoltTestCase;
+use VoltTest\Laravel\Testing\PerformanceTestCase;
 
-class RegistrationPerformanceTest extends IntegrationVoltTestCase
+class RegistrationPerformanceTest extends PerformanceTestCase
 {
     protected static bool $enableServerManagement = true;
 

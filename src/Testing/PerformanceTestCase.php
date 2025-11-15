@@ -9,7 +9,15 @@ use VoltTest\Laravel\Contracts\VoltTestCase as VoltTestCaseInterface;
 use VoltTest\Laravel\Facades\VoltTest;
 use VoltTest\Laravel\Testing\Assertions\VoltTestAssertions;
 
-abstract class IntegrationVoltTestCase extends BaseTestCase
+/**
+ * Base test case for VoltTest performance testing with PHPUnit.
+ *
+ * Provides automatic server management, performance assertions,
+ * and helper methods for running load tests within PHPUnit test suites.
+ *
+ * @package VoltTest\Laravel\Testing
+ */
+abstract class PerformanceTestCase extends BaseTestCase
 {
     use VoltTestAssertions;
 

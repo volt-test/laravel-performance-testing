@@ -5,11 +5,11 @@ declare(strict_types=1);
 namespace VoltTest\Laravel\Tests\Testing;
 
 use PHPUnit\Framework\TestCase;
-use VoltTest\Laravel\Testing\IntegrationVoltTestCase;
+use VoltTest\Laravel\Testing\PerformanceTestCase;
 use VoltTest\Laravel\Testing\ServerManager;
 use VoltTest\Laravel\Testing\ServerRegistry;
 
-class IntegrationVoltTestCaseTest extends TestCase
+class PerformanceTestCaseTest extends TestCase
 {
     private string $originalEnv;
 
@@ -79,7 +79,7 @@ class IntegrationVoltTestCaseTest extends TestCase
     }
 
     /**
-     * Create a test double class that extends IntegrationVoltTestCase.
+     * Create a test double class that extends PerformanceTestCase.
      */
     private function createTestDouble(): string
     {
@@ -89,52 +89,52 @@ class IntegrationVoltTestCaseTest extends TestCase
         $className = 'TestDouble' . $counter . '_' . uniqid();
 
         eval('
-            class ' . $className . ' extends \VoltTest\Laravel\Testing\IntegrationVoltTestCase {
+            class ' . $className . ' extends \VoltTest\Laravel\Testing\PerformanceTestCase {
                 public function __construct() {
                     // Provide name parameter for PHPUnit 11
                     parent::__construct("' . $className . '");
                 }
-                
+
                 public static function exposesShouldStartServer(): bool {
                     return static::shouldStartServer();
                 }
-                
+
                 public function exposesGetBaseUrl(): string {
                     return $this->getBaseUrl();
                 }
-                
+
                 public function exposesSetBaseUrl(string $url): self {
                     return $this->setBaseUrl($url);
                 }
-                
+
                 public function exposesConfigureVoltTest(): void {
                     $this->configureVoltTest();
                 }
-                
+
                 public function exposesGetServerStats(): array {
                     return $this->getServerStats();
                 }
-                
+
                 public function exposesDebugServer(): void {
                     $this->debugServer();
                 }
-                
+
                 public static function exposesValidateBasePath(string $path): string {
                     return static::validateBasePath($path);
                 }
-                
+
                 public static function exposesFindLaravelRoot(string $path): ?string {
                     return static::findLaravelRoot($path);
                 }
-                
+
                 public static function exposesGetBasePath(): string {
                     return static::getBasePath();
                 }
-                
+
                 public static function getServerKeyForTest(): ?string {
                     return static::$serverKey;
                 }
-                
+
                 public static function setServerKeyForTest(?string $key): void {
                     static::$serverKey = $key;
                 }
@@ -173,13 +173,13 @@ class IntegrationVoltTestCaseTest extends TestCase
         $className = 'TestDoubleCustom_' . uniqid();
 
         eval('
-            class ' . $className . ' extends \VoltTest\Laravel\Testing\IntegrationVoltTestCase {
+            class ' . $className . ' extends \VoltTest\Laravel\Testing\PerformanceTestCase {
                 protected static bool $enableServerManagement = true;
-                
+
                 public function __construct() {
                     parent::__construct("' . $className . '");
                 }
-                
+
                 public static function exposesShouldStartServer(): bool {
                     return static::shouldStartServer();
                 }

@@ -11,7 +11,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 #### PHPUnit Integration
 - **PHPUnit Integration Support** - Run VoltTest performance tests within PHPUnit test suites
-- **IntegrationVoltTestCase Base Class** - Abstract base class for creating PHPUnit performance tests with built-in server management and VoltTest integration
+- **PerformanceTestCase Base Class** - Abstract base class for creating PHPUnit performance tests with built-in server management and VoltTest integration (formerly `IntegrationVoltTestCase`)
 - **Reusable VoltTest Classes** - Run existing `VoltTestCase` classes (from `app/VoltTests/`) in PHPUnit tests, enabling code reuse between Artisan commands and PHPUnit test suites
 - **VoltTestAssertions Trait** - Comprehensive assertion methods for validating performance test results including:
   - Success rate assertions (`assertVTSuccessful`, `assertVTErrorRate`)
@@ -43,6 +43,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **ext-pcntl requirement** - Added to composer.json for process control functionality needed by server management
 
 ### Changed
+- **Class Rename** - Renamed `IntegrationVoltTestCase` to `PerformanceTestCase` for clearer, more concise naming that better describes its purpose
 - **CI Configuration** - Updated GitHub Actions workflow to trigger on all branches for comprehensive testing
 - **PHPUnit Configuration** - Refactored phpunit.xml to:
   - Support PHPUnit 11.0 compatibility

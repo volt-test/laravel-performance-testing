@@ -7,7 +7,7 @@ Run VoltTest performance tests within PHPUnit test suites with automated server 
 - [Overview](#overview)
 - [Requirements](#requirements)
 - [Quick Start](#quick-start)
-- [IntegrationVoltTestCase](#integrationvolttestcase)
+- [PerformanceTestCase](#integrationvolttestcase)
 - [Server Management](#server-management)
 - [Performance Assertions](#performance-assertions)
 - [Complete Examples](#complete-examples)
@@ -41,10 +41,10 @@ The PHPUnit integration allows you to:
 namespace Tests\Performance;
 
 use VoltTest\Laravel\Contracts\VoltTestCase;
-use VoltTest\Laravel\Testing\IntegrationVoltTestCase;
+use VoltTest\Laravel\Testing\PerformanceTestCase;
 use VoltTest\Laravel\VoltTestManager;
 
-class HomePagePerformanceTest extends IntegrationVoltTestCase
+class HomePagePerformanceTest extends PerformanceTestCase
 {
     /**
      * Test homepage performance under load.
@@ -70,16 +70,16 @@ class HomePagePerformanceTest extends IntegrationVoltTestCase
 ./vendor/bin/phpunit tests/Performance/HomePagePerformanceTest.php
 ```
 
-## IntegrationVoltTestCase
+## PerformanceTestCase
 
-The `IntegrationVoltTestCase` base class provides everything needed for PHPUnit integration.
+The `PerformanceTestCase` base class provides everything needed for PHPUnit integration.
 
 ### Basic Usage
 
 ```php
-use VoltTest\Laravel\Testing\IntegrationVoltTestCase;
+use VoltTest\Laravel\Testing\PerformanceTestCase;
 
-class MyPerformanceTest extends IntegrationVoltTestCase
+class MyPerformanceTest extends PerformanceTestCase
 {
     public function test_api_endpoint(): void
     {
@@ -192,7 +192,7 @@ The test base class can automatically manage a PHP development server for your t
 Set the `$enableServerManagement` property:
 
 ```php
-class MyPerformanceTest extends IntegrationVoltTestCase
+class MyPerformanceTest extends PerformanceTestCase
 {
     protected static bool $enableServerManagement = true;
     protected static ?int $preferredPort = 8000;
@@ -350,10 +350,10 @@ $this->assertVTMaximumRPS($result, 1000.0); // RPS <= 1000
 namespace Tests\Performance;
 
 use VoltTest\Laravel\Contracts\VoltTestCase;
-use VoltTest\Laravel\Testing\IntegrationVoltTestCase;
+use VoltTest\Laravel\Testing\PerformanceTestCase;
 use VoltTest\Laravel\VoltTestManager;
 
-class HomePageTest extends IntegrationVoltTestCase
+class HomePageTest extends PerformanceTestCase
 {
     protected static bool $enableServerManagement = true;
 
@@ -396,10 +396,10 @@ class HomePageTest extends IntegrationVoltTestCase
 namespace Tests\Performance;
 
 use VoltTest\Laravel\Contracts\VoltTestCase;
-use VoltTest\Laravel\Testing\IntegrationVoltTestCase;
+use VoltTest\Laravel\Testing\PerformanceTestCase;
 use VoltTest\Laravel\VoltTestManager;
 
-class ApiAuthenticationTest extends IntegrationVoltTestCase
+class ApiAuthenticationTest extends PerformanceTestCase
 {
     protected static bool $enableServerManagement = true;
 
@@ -448,10 +448,10 @@ class ApiAuthenticationTest extends IntegrationVoltTestCase
 namespace Tests\Performance;
 
 use VoltTest\Laravel\Contracts\VoltTestCase;
-use VoltTest\Laravel\Testing\IntegrationVoltTestCase;
+use VoltTest\Laravel\Testing\PerformanceTestCase;
 use VoltTest\Laravel\VoltTestManager;
 
-class CheckoutFlowTest extends IntegrationVoltTestCase
+class CheckoutFlowTest extends PerformanceTestCase
 {
     protected static bool $enableServerManagement = true;
 
@@ -513,9 +513,9 @@ class CheckoutFlowTest extends IntegrationVoltTestCase
 
 namespace Tests\Performance;
 
-use VoltTest\Laravel\Testing\IntegrationVoltTestCase;
+use VoltTest\Laravel\Testing\PerformanceTestCase;
 
-class QuickLoadTests extends IntegrationVoltTestCase
+class QuickLoadTests extends PerformanceTestCase
 {
     protected static bool $enableServerManagement = true;
 
@@ -607,9 +607,9 @@ class RegistrationTest implements VoltTestCase
 namespace Tests\Performance;
 
 use App\VoltTests\RegistrationTest;
-use VoltTest\Laravel\Testing\IntegrationVoltTestCase;
+use VoltTest\Laravel\Testing\PerformanceTestCase;
 
-class RegistrationPerformanceTest extends IntegrationVoltTestCase
+class RegistrationPerformanceTest extends PerformanceTestCase
 {
     protected static bool $enableServerManagement = true;
 
@@ -810,13 +810,13 @@ public function test_user_authentication(): void
 
 ```php
 // Each test class can manage its own server
-class FastApiTests extends IntegrationVoltTestCase
+class FastApiTests extends PerformanceTestCase
 {
     protected static bool $enableServerManagement = true;
     protected static ?int $preferredPort = 8000;
 }
 
-class HeavyLoadTests extends IntegrationVoltTestCase
+class HeavyLoadTests extends PerformanceTestCase
 {
     protected static bool $enableServerManagement = true;
     protected static ?int $preferredPort = 8001; // Different port
