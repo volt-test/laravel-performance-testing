@@ -726,8 +726,6 @@ tests/
     ├── Web/
     │   ├── HomePageTest.php
     │   └── CheckoutTest.php
-    └── Database/
-        └── QueryPerformanceTest.php
 ```
 
 ### 2. Use Realistic Load Patterns
