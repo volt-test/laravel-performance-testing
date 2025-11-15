@@ -892,16 +892,16 @@ php artisan volttest:run UserTest --stream --debug
 
 For more information about VoltTest and performance testing with Laravel, check out:
 
-- [VoltTest PHP SDK Documentation](https://php.volt-test.com/docs)
-- [Laravel Performance Testing Guide](https://php.volt-test.com/laravel)
-- [Load Testing Best Practices](https://php.volt-test.com/best-practices)
+- [VoltTest PHP SDK Documentation](https://php.volt-test.com/docs/introduction)
+- [PHPUnit Integration Guide](docs/PHPUNIT_INTEGRATION.md)
+- [CSV Data Sources Guide](docs/CSV_DATA_SOURCE.md)
 
 If you have questions, suggestions, or need help, please open an issue on our [GitHub repository](https://github.com/volt-test/laravel-performance-testing).
 
 ## License
 
-This Laravel package is open-sourced software licensed under the [MIT license](LICENSE).
+This Laravel package is open-sourced software licensed under the [MIT license](LICENSE.md).
 
 ## Changelog
 
-Please see [CHANGELOG](CHANGELOG) for more information on what has changed recently.
+Please see [CHANGELOG](CHANGELOG.md) for more information on what has changed recently.
