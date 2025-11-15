@@ -18,10 +18,11 @@ For more information about the core VoltTest functionality, visit **[php.volt-te
 - [Quick Start](#quick-start)
 - [Creating Tests](#creating-tests)
 - [API Testing](#api-testing)
-- [CSV Data Sources](#csv-data-sources)
 - [Available Methods](#available-methods)
 - [Running Tests](#running-tests)
 - [Reports](#reports)
+- [CSV Data Sources](#csv-data-sources)
+- [PHPUnit Integration](#phpunit-integration)
 - [Advanced Configuration](#advanced-configuration)
 - [Testing Tips](#testing-tips)
 - [Troubleshooting](#troubleshooting)
@@ -631,6 +632,185 @@ For detailed information including:
 - Advanced patterns and best practices
 
 **[Read the complete CSV Data Source guide →](docs/CSV_DATA_SOURCE.md)**
+
+## PHPUnit Integration
+
+Run VoltTest performance tests within your PHPUnit test suite with automated server management and comprehensive performance assertions.
+
+### Quick Example
+
+```php
+<?php
+
+namespace Tests\Performance;
+
+use VoltTest\Laravel\Contracts\VoltTestCase;
+use VoltTest\Laravel\Testing\IntegrationVoltTestCase;
+use VoltTest\Laravel\VoltTestManager;
+
+class HomePagePerformanceTest extends IntegrationVoltTestCase
+{
+    protected static bool $enableServerManagement = true;
+
+    public function test_homepage_performance(): void
+    {
+        $testClass = new class implements VoltTestCase {
+            public function define(VoltTestManager $manager): void
+            {
+                $scenario = $manager->scenario('Homepage Load Test');
+
+                $scenario->step('Load Homepage')
+                    ->get('/')
+                    ->expectStatus(200);
+            }
+        };
+
+        $result = $this->runVoltTest($testClass, [
+            'virtual_users' => 10,
+            'duration' => '30s',
+        ]);
+
+        // Assert performance metrics
+        $this->assertVTSuccessful($result, 95.0);
+        $this->assertVTP95ResponseTime($result, 500);
+        $this->assertVTAverageResponseTime($result, 200);
+    }
+}
+```
+
+### Key Features
+
+- **IntegrationVoltTestCase** - Base test class for PHPUnit integration
+- **Automatic Server Management** - Built-in PHP development server lifecycle management
+- **Performance Assertions** - Specialized assertions for response times, success rates, and throughput
+- **Quick Helpers** - Simple methods for common load testing scenarios
+
+### Available Assertions
+
+```php
+// Success rate assertions
+$this->assertVTSuccessful($result, 95.0);           // >= 95% success rate
+$this->assertVTErrorRate($result, 5.0);             // <= 5% error rate
+
+// Response time assertions
+$this->assertVTMinResponseTime($result, 10);        // Min response time
+$this->assertVTMaxResponseTime($result, 2000);      // Max response time
+$this->assertVTAverageResponseTime($result, 300);   // Average response time
+$this->assertVTMedianResponseTime($result, 200);    // Median (P50) response time
+$this->assertVTP95ResponseTime($result, 500);       // P95 response time
+$this->assertVTP99ResponseTime($result, 1000);      // P99 response time
+
+// Throughput assertions
+$this->assertVTMinimumRequests($result, 100);       // Total requests >= 100
+$this->assertVTMinimumRPS($result, 10.0);           // Requests/sec >= 10
+$this->assertVTMaximumRPS($result, 1000.0);         // Requests/sec <= 1000
+```
+
+### Quick Load Testing Helpers
+
+```php
+// Test a single URL
+$result = $this->loadTestUrl('/');
+$this->assertVTSuccessful($result);
+
+// Test an API endpoint
+$result = $this->loadTestApi('/api/users', 'POST', [
+    'name' => 'John Doe',
+    'email' => 'john@example.com',
+]);
+$this->assertVTSuccessful($result);
+```
+
+### Reusing Existing VoltTest Classes
+
+You can reuse your existing VoltTest classes in PHPUnit tests for maximum code reuse:
+
+**VoltTest Class** (`app/VoltTests/RegistrationTest.php`):
+```php
+<?php
+
+namespace App\VoltTests;
+
+use VoltTest\Laravel\Contracts\VoltTestCase;
+use VoltTest\Laravel\VoltTestManager;
+
+class RegistrationTest implements VoltTestCase
+{
+    public function define(VoltTestManager $manager): void
+    {
+        $scenario = $manager->scenario('RegistrationTest')
+            ->dataSource('registration_users.csv', 'sequential');
+
+        $scenario->step('Home')->get('/')->expectStatus(200);
+        $scenario->step('Register')->get('/register')->extractCsrfToken('csrf_token')->expectStatus(200);
+        $scenario->step('Submit Registration')
+            ->post('/register', [
+                '_token' => '${csrf_token}',
+                'name' => '${name}',
+                'email' => '${email}',
+                'password' => '${password}',
+                'password_confirmation' => '${password}',
+            ])
+            ->expectStatus(302);
+        $scenario->step('Visit Dashboard')->get('/dashboard')->expectStatus(200);
+    }
+}
+```
+
+**PHPUnit Test** (`tests/Performance/RegistrationPerformanceTest.php`):
+```php
+<?php
+
+namespace Tests\Performance;
+
+use App\VoltTests\RegistrationTest;
+use VoltTest\Laravel\Testing\IntegrationVoltTestCase;
+
+class RegistrationPerformanceTest extends IntegrationVoltTestCase
+{
+    protected static bool $enableServerManagement = true;
+
+    public function test_registration_flow_performance(): void
+    {
+        $test = new RegistrationTest();
+
+        $result = $this->runVoltTest($test, [
+            'virtual_users' => 50,
+            'duration' => '2m',
+        ]);
+
+        $this->assertVTSuccessful($result, 95.0);
+        $this->assertVTP95ResponseTime($result, 1500);
+        $this->assertVTAverageResponseTime($result, 800);
+    }
+}
+```
+
+**Benefits:** Define scenarios once, run via Artisan (`php artisan volttest:run RegistrationTest`) or PHPUnit with assertions.
+
+### Running PHPUnit Tests
+
+```bash
+# Run all tests
+./vendor/bin/phpunit
+
+# Run specific performance test
+./vendor/bin/phpunit tests/Performance/HomePagePerformanceTest.php
+
+# Run performance test suite
+./vendor/bin/phpunit --testsuite=Performance
+```
+
+### 📖 Complete PHPUnit Documentation
+
+For detailed information including:
+- Server management configuration
+- All available assertions with examples
+- Advanced test patterns and best practices
+- Troubleshooting common issues
+- Complete working examples
+
+**[Read the complete PHPUnit Integration guide →](docs/PHPUNIT_INTEGRATION.md)**
 
 
 ## Testing Tips
