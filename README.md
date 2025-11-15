@@ -903,4 +903,4 @@ If you have questions, suggestions, or need help, please open an issue on our [G
 This Laravel package is open-sourced software licensed under the [MIT license](LICENSE).
 
 ## Changelog
-Please see [CHANGELOG](CHANGELOG.md) for more information on what has changed recently.
+Please see [CHANGELOG](CHANGELOG) for more information on what has changed recently.
