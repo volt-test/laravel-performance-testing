@@ -77,6 +77,7 @@ trait VoltTestAssertions
     protected function assertVTMaxResponseTime(TestResult $result, int $maxTimeMs): void
     {
         $maxTime = $this->parseTimeToMs($result->getMaxResponseTime());
+        dump($maxTime, $result->getMaxResponseTime());
 
         $this->assertLessThanOrEqual(
             $maxTimeMs,
@@ -216,10 +217,10 @@ trait VoltTestAssertions
     {
         $patterns = [
             '/(\d+\.?\d*)\s*h(?:ours?)?/i' => 3600000,        // hours
+            '/(\d+\.?\d*)\s*ms/i' => 1,                        // milliseconds (must come before minutes!)
+            '/(\d+\.?\d*)\s*(?:µs|us|micro(?:s(?:econds?)?)?)/i' => 0.001,      // microseconds (must come before minutes!)
             '/(\d+\.?\d*)\s*m(?:in(?:ute)?s?)?/i' => 60000,   // minutes
             '/(\d+\.?\d*)\s*s(?:ec(?:ond)?s?)?$/i' => 1000,   // seconds
-            '/(\d+\.?\d*)\s*ms/i' => 1,                        // milliseconds
-            '/(\d+\.?\d*)\s*(?:µs|us|micro(?:s(?:econds?)?)?)/i' => 0.001,      // microseconds
             '/(\d+\.?\d*)\s*ns/i' => 0.000001,                 // nanoseconds
         ];
 
