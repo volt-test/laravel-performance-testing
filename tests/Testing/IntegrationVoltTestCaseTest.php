@@ -1,4 +1,5 @@
 <?php
+
 declare(strict_types=1);
 
 namespace VoltTest\Laravel\Tests\Testing;
@@ -29,7 +30,7 @@ class IntegrationVoltTestCaseTest extends TestCase
         $_ENV = unserialize($this->originalEnv);
 
         // Restore config if available
-        if (function_exists('config') && !empty($this->originalConfig)) {
+        if (function_exists('config') && ! empty($this->originalConfig)) {
             foreach ($this->originalConfig as $key => $value) {
                 config([$key => $value]);
             }
@@ -64,12 +65,13 @@ class IntegrationVoltTestCaseTest extends TestCase
      */
     private function isConfigAvailable(): bool
     {
-        if (!function_exists('config')) {
+        if (! function_exists('config')) {
             return false;
         }
 
         try {
             config('app.name');
+
             return true;
         } catch (\Exception $e) {
             return false;
@@ -210,7 +212,7 @@ class IntegrationVoltTestCaseTest extends TestCase
                 'manager' => $mockManager,
                 'pid' => getmypid(),
                 'registered_at' => microtime(true),
-            ]
+            ],
         ]);
 
         $instance = new $className();
@@ -225,7 +227,7 @@ class IntegrationVoltTestCaseTest extends TestCase
      */
     public function testGetBaseUrlReturnsConfigDefaultWhenNoServer(): void
     {
-        if (!$this->isConfigAvailable()) {
+        if (! $this->isConfigAvailable()) {
             $this->markTestSkipped('Config not available in this environment');
         }
 
@@ -249,7 +251,7 @@ class IntegrationVoltTestCaseTest extends TestCase
      */
     public function testSetBaseUrlChangesConfiguration(): void
     {
-        if (!$this->isConfigAvailable()) {
+        if (! $this->isConfigAvailable()) {
             $this->markTestSkipped('Config not available in this environment');
         }
 
@@ -271,7 +273,7 @@ class IntegrationVoltTestCaseTest extends TestCase
      */
     public function testConfigureVoltTestSetsConfiguration(): void
     {
-        if (!$this->isConfigAvailable()) {
+        if (! $this->isConfigAvailable()) {
             $this->markTestSkipped('Config not available in this environment');
         }
 
@@ -432,5 +434,4 @@ class IntegrationVoltTestCaseTest extends TestCase
         $className::tearDownAfterClass();
         $this->assertNull($className::getServerKeyForTest());
     }
-
 }
