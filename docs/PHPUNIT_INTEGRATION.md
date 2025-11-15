@@ -7,7 +7,7 @@ Run VoltTest performance tests within PHPUnit test suites with automated server 
 - [Overview](#overview)
 - [Requirements](#requirements)
 - [Quick Start](#quick-start)
-- [PerformanceTestCase](#integrationvolttestcase)
+- [PerformanceTestCase](#PerformanceTestCase)
 - [Server Management](#server-management)
 - [Performance Assertions](#performance-assertions)
 - [Complete Examples](#complete-examples)
@@ -17,13 +17,27 @@ Run VoltTest performance tests within PHPUnit test suites with automated server 
 
 ## Overview
 
-The PHPUnit integration allows you to:
+### Before PHPUnit Integration
 
-- Run performance tests as part of your PHPUnit test suite
-- Automatically manage test server lifecycle
-- Use specialized performance assertions
-- Combine functional and performance testing
-- Run tests in CI/CD pipelines
+VoltTest Laravel package allowed you to:
+- Run performance tests via Artisan: `php artisan volttest:run UserTest`
+- View performance metrics in console/JSON reports
+- Manually review results to determine if performance was acceptable
+
+### After PHPUnit Integration
+
+Now you can:
+- Run performance tests with PHPUnit: `./vendor/bin/phpunit`
+- Write assertions for performance requirements (P95 < 500ms, success rate > 95%)
+- Automatically fail builds when performance degrades
+- Auto-manage test servers (no manual `php artisan serve`)
+- Mix performance tests with unit/feature tests in one suite
+
+### The Key Difference
+
+**Before:** Manual process - run tests, check results, decide if acceptable.
+
+**After:** Automated - tests pass/fail based on assertions, integrated into CI/CD.
 
 ## Requirements
 
