@@ -52,6 +52,7 @@ For comprehensive documentation about VoltTest core features, load testing conce
 - 🎯 **URL Load Testing** - Direct URL testing without creating test classes
 - ⚡ **Artisan Commands** - Convenient CLI commands for test creation and execution
 - 🔧 **Configurable** - Flexible configuration options for different environments
+- **PHPUnit Integration** - Run performance tests within your PHPUnit test suite with automated server management and assertions
 - 📄 **CSV Data Sources** - Load dynamic test data from CSV files for realistic performance testing
 
 ## Installation
