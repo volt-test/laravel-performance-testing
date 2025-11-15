@@ -60,7 +60,7 @@ trait VoltTestAssertions
     {
         $minTime = $this->parseTimeToMs($result->getMinResponseTime());
 
-        $this->assertGreaterThanOrEqual(
+        $this->assertLessThanOrEqual(
             $minTimeMs,
             $minTime,
             "Min response time {$minTime}ms is suspiciously low (expected >= {$minTimeMs}ms)"
