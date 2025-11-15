@@ -947,7 +947,6 @@ protected static ?int $preferredPort = 9000; // Use different port
 
 ## Learn More
 
-- [VoltTest PHP SDK Documentation](https://php.volt-test.com/docs)
+- [VoltTest PHP SDK Documentation](https://php.volt-test.com/docs/introduction)
 - [CSV Data Sources Guide](CSV_DATA_SOURCE.md)
 - [Main README](../README.md)
-- [Performance Testing Best Practices](https://php.volt-test.com/best-practices)
