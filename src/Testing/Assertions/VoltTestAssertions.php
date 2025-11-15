@@ -77,7 +77,6 @@ trait VoltTestAssertions
     protected function assertVTMaxResponseTime(TestResult $result, int $maxTimeMs): void
     {
         $maxTime = $this->parseTimeToMs($result->getMaxResponseTime());
-        dump($maxTime, $result->getMaxResponseTime());
 
         $this->assertLessThanOrEqual(
             $maxTimeMs,
