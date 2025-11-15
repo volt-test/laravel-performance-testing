@@ -46,14 +46,14 @@ For comprehensive documentation about VoltTest core features, load testing conce
 
 ## Features
 
-- 🚀 **Easy Laravel Integration** - Seamlessly integrates with Laravel applications
-- 🔍 **Automatic Route Discovery** - Discover and test your application routes automatically
-- 📊 **Comprehensive Reporting** - Detailed performance reports with metrics
-- 🎯 **URL Load Testing** - Direct URL testing without creating test classes
-- ⚡ **Artisan Commands** - Convenient CLI commands for test creation and execution
-- 🔧 **Configurable** - Flexible configuration options for different environments
+- **Easy Laravel Integration** - Seamlessly integrates with Laravel applications
+- **Automatic Route Discovery** - Discover and test your application routes automatically
+- **Comprehensive Reporting** - Detailed performance reports with metrics
+- **URL Load Testing** - Direct URL testing without creating test classes
+- **Artisan Commands** - Convenient CLI commands for test creation and execution
+- **Configurable** - Flexible configuration options for different environments
 - **PHPUnit Integration** - Run performance tests within your PHPUnit test suite with automated server management and assertions
-- 📄 **CSV Data Sources** - Load dynamic test data from CSV files for realistic performance testing
+- **CSV Data Sources** - Load dynamic test data from CSV files for realistic performance testing
 
 ## Installation
 
