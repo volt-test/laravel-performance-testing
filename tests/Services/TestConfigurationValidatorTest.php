@@ -18,8 +18,7 @@ class TestConfigurationValidatorTest extends TestCase
         $this->validator = new TestConfigurationValidator();
     }
 
-    /** @test */
-    public function it_validates_virtual_users_successfully(): void
+    public function test_validates_virtual_users_successfully(): void
     {
         // Valid cases should not throw exceptions
         $this->validator->validateVirtualUsers('1');
@@ -30,8 +29,7 @@ class TestConfigurationValidatorTest extends TestCase
         $this->assertTrue(true); // No exceptions thrown
     }
 
-    /** @test */
-    public function it_rejects_invalid_virtual_users(): void
+    public function test_rejects_invalid_virtual_users(): void
     {
         $this->expectException(InvalidArgumentException::class);
         $this->expectExceptionMessage('Virtual users must be a positive integer greater than 0');
@@ -39,8 +37,7 @@ class TestConfigurationValidatorTest extends TestCase
         $this->validator->validateVirtualUsers('0');
     }
 
-    /** @test */
-    public function it_rejects_negative_virtual_users(): void
+    public function test_rejects_negative_virtual_users(): void
     {
         $this->expectException(InvalidArgumentException::class);
         $this->expectExceptionMessage('Virtual users must be a positive integer greater than 0');
@@ -48,8 +45,7 @@ class TestConfigurationValidatorTest extends TestCase
         $this->validator->validateVirtualUsers('-1');
     }
 
-    /** @test */
-    public function it_validates_duration_formats_successfully(): void
+    public function test_validates_duration_formats_successfully(): void
     {
         // Valid duration formats
         $validDurations = ['30s', '5m', '2h', '1s', '60m', '24h'];
@@ -64,12 +60,11 @@ class TestConfigurationValidatorTest extends TestCase
         $this->assertTrue(true); // No exceptions thrown
     }
 
-    /** @test */
-    public function it_rejects_invalid_duration_formats(): void
+    public function test_rejects_invalid_duration_formats(): void
     {
         $invalidDurations = [
-            '30',      // Missing unit
-            '30sec',   // Wrong unit
+            '30',      // Missing untest
+            '30sec',   // Wrong untest
             's30',     // Wrong order
             '30 s',    // Space
             '30.5s',   // Decimal
@@ -87,21 +82,19 @@ class TestConfigurationValidatorTest extends TestCase
         }
     }
 
-    /** @test */
-    public function it_validates_http_methods_successfully(): void
+    public function test_validates_http_methods_successfully(): void
     {
         $validMethods = ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'HEAD', 'OPTIONS'];
 
         foreach ($validMethods as $method) {
             $this->validator->validateHttpMethod($method);
-            $this->validator->validateHttpMethod(strtolower($method)); // Test case insensitive
+            $this->validator->validateHttpMethod(strtolower($method)); // Test case insenstestive
         }
 
         $this->assertTrue(true); // No exceptions thrown
     }
 
-    /** @test */
-    public function it_rejects_invalid_http_methods(): void
+    public function test_rejects_invalid_http_methods(): void
     {
         $this->expectException(InvalidArgumentException::class);
         $this->expectExceptionMessage('HTTP method must be one of');
@@ -109,8 +102,7 @@ class TestConfigurationValidatorTest extends TestCase
         $this->validator->validateHttpMethod('INVALID');
     }
 
-    /** @test */
-    public function it_validates_json_strings_successfully(): void
+    public function test_validates_json_strings_successfully(): void
     {
         $validJsonStrings = [
             '{"key": "value"}',
@@ -132,8 +124,7 @@ class TestConfigurationValidatorTest extends TestCase
         $this->assertTrue(true); // No exceptions thrown
     }
 
-    /** @test */
-    public function it_rejects_invalid_json_strings(): void
+    public function test_rejects_invalid_json_strings(): void
     {
         $invalidJsonStrings = [
             '{invalid json}',
@@ -153,8 +144,7 @@ class TestConfigurationValidatorTest extends TestCase
         }
     }
 
-    /** @test */
-    public function it_validates_test_class_names_successfully(): void
+    public function test_validates_test_class_names_successfully(): void
     {
         $validClassNames = [
             'UserTest',
@@ -173,11 +163,10 @@ class TestConfigurationValidatorTest extends TestCase
         $this->assertTrue(true); // No exceptions thrown
     }
 
-    /** @test */
-    public function it_rejects_invalid_test_class_names(): void
+    public function test_rejects_invalid_test_class_names(): void
     {
         $invalidClassNames = [
-            '123Test', // Starts with number
+            '123Test', // Starts wtesth number
             'Test-Name', // Contains hyphen
             'Test Name', // Contains space
             'Test@Name', // Contains special character
@@ -198,8 +187,7 @@ class TestConfigurationValidatorTest extends TestCase
         }
     }
 
-    /** @test */
-    public function it_validates_file_paths_successfully(): void
+    public function test_validates_file_paths_successfully(): void
     {
         $validPaths = [
             'tests/VoltTests',
@@ -215,8 +203,7 @@ class TestConfigurationValidatorTest extends TestCase
         $this->assertTrue(true); // No exceptions thrown
     }
 
-    /** @test */
-    public function it_rejects_paths_with_directory_traversal(): void
+    public function test_rejects_paths_with_directory_traversal(): void
     {
         $this->expectException(InvalidArgumentException::class);
         $this->expectExceptionMessage('Path cannot contain ".." for security reasons');
@@ -224,8 +211,7 @@ class TestConfigurationValidatorTest extends TestCase
         $this->validator->validatePath('../malicious/path');
     }
 
-    /** @test */
-    public function it_validates_content_types_successfully(): void
+    public function test_validates_content_types_successfully(): void
     {
         $validContentTypes = [
             'application/json',
@@ -235,7 +221,7 @@ class TestConfigurationValidatorTest extends TestCase
             'text/plain',
             'text/html',
             'text/xml',
-            'application/json; charset=utf-8', // With charset
+            'application/json; charset=utf-8', // Wtesth charset
             null, // null should be valid
         ];
 
@@ -246,8 +232,7 @@ class TestConfigurationValidatorTest extends TestCase
         $this->assertTrue(true); // No exceptions thrown
     }
 
-    /** @test */
-    public function it_rejects_invalid_content_types(): void
+    public function test_rejects_invalid_content_types(): void
     {
         $this->expectException(InvalidArgumentException::class);
         $this->expectExceptionMessage('Content type must be one of the common types');
@@ -255,8 +240,7 @@ class TestConfigurationValidatorTest extends TestCase
         $this->validator->validateContentType('invalid/content-type');
     }
 
-    /** @test */
-    public function it_validates_url_test_options_successfully(): void
+    public function test_validates_url_test_options_successfully(): void
     {
         $validOptions = [
             'method' => 'POST',
@@ -270,8 +254,7 @@ class TestConfigurationValidatorTest extends TestCase
         $this->assertTrue(true); // No exceptions thrown
     }
 
-    /** @test */
-    public function it_rejects_invalid_status_codes_in_url_options(): void
+    public function test_rejects_invalid_status_codes_in_url_options(): void
     {
         $invalidOptions = [
             ['expected_status_code' => 99], // Too low
@@ -289,8 +272,7 @@ class TestConfigurationValidatorTest extends TestCase
         }
     }
 
-    /** @test */
-    public function it_handles_edge_case_status_codes(): void
+    public function test_handles_edge_case_status_codes(): void
     {
         $validStatusCodes = [100, 200, 300, 404, 500, 599];
 
@@ -301,8 +283,7 @@ class TestConfigurationValidatorTest extends TestCase
         $this->assertTrue(true); // No exceptions thrown
     }
 
-    /** @test */
-    public function it_validates_complex_json_structures(): void
+    public function test_validates_complex_json_structures(): void
     {
         $complexJson = json_encode([
             'user' => [
@@ -323,8 +304,7 @@ class TestConfigurationValidatorTest extends TestCase
         $this->assertTrue(true); // No exceptions thrown
     }
 
-    /** @test */
-    public function it_handles_unicode_in_json(): void
+    public function test_handles_unicode_in_json(): void
     {
         $unicodeJson = json_encode(['message' => 'Hello 🌍']);
 

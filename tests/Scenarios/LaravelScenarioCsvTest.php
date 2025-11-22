@@ -58,7 +58,7 @@ class LaravelScenarioCsvTest extends TestCase
         parent::tearDown();
     }
 
-    public function test_dataSource_with_relative_path_uses_config_defaults(): void
+    public function testDataSourceWithRelativePathUsesConfigDefaults(): void
     {
         $scenario = new LaravelScenario(new Scenario('Test Scenario'));
 
@@ -68,7 +68,7 @@ class LaravelScenarioCsvTest extends TestCase
         $this->assertSame($scenario, $result);
     }
 
-    public function test_dataSource_with_custom_distribution_mode(): void
+    public function testDataSourceWithCustomDistributionMode(): void
     {
         $scenario = new LaravelScenario(new Scenario('Test Scenario'));
 
@@ -77,7 +77,7 @@ class LaravelScenarioCsvTest extends TestCase
         $this->assertInstanceOf(LaravelScenario::class, $result);
     }
 
-    public function test_dataSource_with_custom_headers_setting(): void
+    public function testDataSourceWithCustomHeadersSetting(): void
     {
         $scenario = new LaravelScenario(new Scenario('Test Scenario'));
 
@@ -86,7 +86,7 @@ class LaravelScenarioCsvTest extends TestCase
         $this->assertInstanceOf(LaravelScenario::class, $result);
     }
 
-    public function test_dataSource_with_absolute_path(): void
+    public function testDataSourceWithAbsolutePath(): void
     {
         $absolutePath = __DIR__ . '/fixtures/users.csv';
         $scenario = new LaravelScenario(new Scenario('Test Scenario'));
@@ -96,7 +96,7 @@ class LaravelScenarioCsvTest extends TestCase
         $this->assertInstanceOf(LaravelScenario::class, $result);
     }
 
-    public function test_dataSource_throws_exception_for_nonexistent_file(): void
+    public function testDataSourceThrowsExceptionForNonexistentFile(): void
     {
         $scenario = new LaravelScenario(new Scenario('Test Scenario'));
 
@@ -106,7 +106,7 @@ class LaravelScenarioCsvTest extends TestCase
         $scenario->dataSource('nonexistent.csv');
     }
 
-    public function test_dataSource_with_validation_disabled(): void
+    public function testDataSourceWithValidationDisabled(): void
     {
         config(['volttest.csv_data.validate_files' => false]);
 
@@ -125,7 +125,7 @@ class LaravelScenarioCsvTest extends TestCase
         $this->assertInstanceOf(LaravelScenario::class, $result);
     }
 
-    public function test_dataSource_throws_exception_when_called_twice(): void
+    public function testDataSourceThrowsExceptionWhenCalledTwice(): void
     {
         $scenario = new LaravelScenario(new Scenario('Test Scenario'));
 
@@ -137,7 +137,7 @@ class LaravelScenarioCsvTest extends TestCase
         $scenario->dataSource('users.csv');
     }
 
-    public function test_resolveCsvFilePath_with_relative_path(): void
+    public function testResolveCsvFilePathWithRelativePath(): void
     {
         $scenario = new LaravelScenario(new Scenario('Test Scenario'));
         $reflection = new \ReflectionClass($scenario);
@@ -150,7 +150,7 @@ class LaravelScenarioCsvTest extends TestCase
         $this->assertEquals('/custom/path/test.csv', $result);
     }
 
-    public function test_resolveCsvFilePath_with_absolute_path(): void
+    public function testResolveCsvFilePathWithAbsolutePath(): void
     {
         $scenario = new LaravelScenario(new Scenario('Test Scenario'));
         $reflection = new \ReflectionClass($scenario);
@@ -163,7 +163,7 @@ class LaravelScenarioCsvTest extends TestCase
         $this->assertEquals('/absolute/path/test.csv', $result);
     }
 
-    public function test_scenario_fluent_interface_with_dataSource(): void
+    public function testScenarioFluentInterfaceWithDataSource(): void
     {
         $scenario = new LaravelScenario(new Scenario('Test Scenario'));
 
