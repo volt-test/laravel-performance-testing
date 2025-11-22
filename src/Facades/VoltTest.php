@@ -12,7 +12,7 @@ use VoltTest\Laravel\Contracts\VoltTestCase;
  * @method static \VoltTest\VoltTest getVoltTest()
  * @method static \VoltTest\Laravel\VoltTestManager addTestFromClass(string|VoltTestCase $className)
  * @method static Collection getScenarios() :
- * @method static mixed run(bool $streamOutput = false)
+ * @method static \VoltTest\TestResult run(bool $streamOutput = false)
  *
  * @see \VoltTest\Laravel\VoltTestManager
  */
