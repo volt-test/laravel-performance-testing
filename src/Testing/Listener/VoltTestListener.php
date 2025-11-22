@@ -6,6 +6,7 @@ namespace VoltTest\Laravel\Testing\Listener;
 
 use PHPUnit\Event\Test\Finished;
 use PHPUnit\Event\Test\FinishedSubscriber;
+use VoltTest\TestResult;
 
 class VoltTestListener implements FinishedSubscriber
 {
@@ -22,12 +23,8 @@ class VoltTestListener implements FinishedSubscriber
     /**
      * Print the performance result to the console.
      */
-    protected function printResult(string $testName, mixed $result): void
+    protected function printResult(string $testName, TestResult $result): void
     {
-        // Check if result has the expected methods (duck typing)
-        if (! method_exists($result, 'getTotalRequests')) {
-            return;
-        }
 
         $output = "\n\n";
         $output .= "----------------------------------------------------------------------\n";
@@ -53,6 +50,7 @@ class VoltTestListener implements FinishedSubscriber
         if (preg_match('/::(\w+)/', $testName, $matches)) {
             return $matches[1];
         }
+
         return $testName;
     }
 }

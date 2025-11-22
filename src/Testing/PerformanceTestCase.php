@@ -8,6 +8,7 @@ use Illuminate\Foundation\Testing\TestCase as BaseTestCase;
 use VoltTest\Laravel\Contracts\VoltTestCase as VoltTestCaseInterface;
 use VoltTest\Laravel\Facades\VoltTest;
 use VoltTest\Laravel\Testing\Assertions\VoltTestAssertions;
+use VoltTest\TestResult;
 
 /**
  * Base test case for VoltTest performance testing with PHPUnit.
@@ -278,7 +279,7 @@ abstract class PerformanceTestCase extends BaseTestCase
     protected function runVoltTest(
         VoltTestCaseInterface $testClass,
         array $options = []
-    ): mixed {
+    ): TestResult {
         try {
             // Apply default options
             $options = array_merge([
@@ -331,7 +332,7 @@ abstract class PerformanceTestCase extends BaseTestCase
     /**
      * Quick helper to run a simple URL load test.
      */
-    protected function loadTestUrl(string $url, array $options = []): mixed
+    protected function loadTestUrl(string $url, array $options = []): TestResult
     {
         $testClass = new class ($url) implements VoltTestCaseInterface {
             public function __construct(private string $url)
@@ -358,7 +359,7 @@ abstract class PerformanceTestCase extends BaseTestCase
         string $method = 'GET',
         array $data = [],
         array $options = []
-    ): mixed {
+    ): TestResult {
         $testClass = new class ($endpoint, $method, $data) implements VoltTestCaseInterface {
             public function __construct(
                 private string $endpoint,

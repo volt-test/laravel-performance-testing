@@ -8,6 +8,7 @@ use Exception;
 use Illuminate\Support\Collection;
 use VoltTest\Laravel\Contracts\VoltTestCase;
 use VoltTest\Laravel\Scenarios\LaravelScenario;
+use VoltTest\TestResult;
 use VoltTest\VoltTest;
 
 class VoltTestManager
@@ -101,9 +102,9 @@ class VoltTestManager
      *
      * @param bool $streamOutput
      *
-     * @return mixed
+     * @return TestResult
      * */
-    public function run(bool $streamOutput = false): mixed
+    public function run(bool $streamOutput = false): TestResult
     {
         return $this->voltTest->run($streamOutput);
     }
