@@ -310,7 +310,8 @@ class ServerManagerTest extends TestCase
 
     public function testCanConnectReturnsFalseWhenServerNotRunning(): void
     {
-        $manager = new ServerManager($this->tempBasePath, false);
+        $port = rand(50000, 59000);
+        $manager = new ServerManager($this->tempBasePath, false, '127.0.0.1', $port);
 
         $reflection = new \ReflectionClass($manager);
         $method = $reflection->getMethod('canConnect');
@@ -400,7 +401,8 @@ class ServerManagerTest extends TestCase
 
     public function testWaitForServerThrowsExceptionWhenProcessDies(): void
     {
-        $manager = new ServerManager($this->tempBasePath, false);
+        $port = rand(50000, 59000);
+        $manager = new ServerManager($this->tempBasePath, false, '127.0.0.1', $port);
 
         // Mock a process that dies immediately
         $mockProcess = Mockery::mock(Process::class);

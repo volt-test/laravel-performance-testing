@@ -638,6 +638,16 @@ For detailed information including:
 
 Run VoltTest performance tests within your PHPUnit test suite with automated server management and comprehensive performance assertions.
 
+### Configuration
+
+To enable console reporting of performance metrics, you must register the VoltTest extension in your `phpunit.xml` file:
+
+```xml
+<extensions>
+    <bootstrap class="VoltTest\Laravel\Testing\VoltTestExtension"/>
+</extensions>
+```
+
 ### Quick Example
 
 ```php

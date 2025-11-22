@@ -13,7 +13,6 @@ class VoltTestExtension implements Extension
 {
     public function bootstrap(Configuration $configuration, Facade $facade, ParameterCollection $parameters): void
     {
-        // TODO: Implement bootstrap() method.
-        // Register VoltTest related listeners or initialize VoltTest settings
+        $facade->registerSubscriber(new Listener\VoltTestListener());
     }
 }

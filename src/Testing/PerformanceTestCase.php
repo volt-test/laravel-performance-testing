@@ -43,6 +43,27 @@ abstract class PerformanceTestCase extends BaseTestCase
     protected static ?string $serverKey = null;
 
     /**
+     * The last test result for reporting.
+     */
+    protected static mixed $lastTestResult = null;
+
+    /**
+     * Get the last test result.
+     */
+    public static function getLastTestResult(): mixed
+    {
+        return static::$lastTestResult;
+    }
+
+    /**
+     * Clear the last test result.
+     */
+    public static function clearLastTestResult(): void
+    {
+        static::$lastTestResult = null;
+    }
+
+    /**
      * Setup before first test in the class.
      */
     public static function setUpBeforeClass(): void
@@ -272,7 +293,12 @@ abstract class PerformanceTestCase extends BaseTestCase
             VoltTest::addTestFromClass($testClass);
 
             // Run the test
-            return VoltTest::run($options['stream'] ?? false);
+            $result = VoltTest::run($options['stream'] ?? false);
+
+            // Store result for listener
+            static::$lastTestResult = $result;
+
+            return $result;
         } catch (\Exception $e) {
             $this->fail("VoltTest execution failed: " . $e->getMessage());
         }
