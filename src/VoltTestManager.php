@@ -6,6 +6,8 @@ namespace VoltTest\Laravel;
 
 use Exception;
 use Illuminate\Support\Collection;
+use VoltTest\CloudRun;
+use VoltTest\Exceptions\VoltTestException;
 use VoltTest\Laravel\Contracts\VoltTestCase;
 use VoltTest\Laravel\Scenarios\LaravelScenario;
 use VoltTest\TestResult;
@@ -98,13 +100,35 @@ class VoltTestManager
     }
 
     /**
+     * Enable cloud execution mode.
+     *
+     * @return $this
+     *
+     * @throws VoltTestException
+     */
+    public function cloud(): self
+    {
+        $apiKey = $this->config['cloud']['api_key'] ?? null;
+
+        if (empty($apiKey)) {
+            throw new VoltTestException(
+                'Cloud API key is required. Set VOLTTEST_API_KEY in your .env file.'
+            );
+        }
+
+        $this->voltTest->cloud($apiKey);
+
+        return $this;
+    }
+
+    /**
      * Run The Test
      *
      * @param bool $streamOutput
      *
-     * @return TestResult
+     * @return TestResult|CloudRun
      * */
-    public function run(bool $streamOutput = false): TestResult
+    public function run(bool $streamOutput = false): TestResult|CloudRun
     {
         return $this->voltTest->run($streamOutput);
     }

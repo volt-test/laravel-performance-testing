@@ -90,4 +90,18 @@ return [
         'default_distribution' => 'unique',      // Default distribution mode
         'default_headers' => true,               // Default header setting
     ],
+
+    /*
+    |--------------------------------------------------------------------------
+    | Cloud Configuration
+    |--------------------------------------------------------------------------
+    |
+    | Configure cloud execution for running tests on VoltTest Cloud.
+    | Set VOLTTEST_API_KEY in your .env file to enable cloud execution.
+    |
+    */
+    'cloud' => [
+        'enabled' => env('VOLTTEST_CLOUD_ENABLED', false),
+        'api_key' => env('VOLTTEST_API_KEY'),
+    ],
 ];

@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace VoltTest\Laravel\Commands;
 
 use Illuminate\Console\Command;
+use VoltTest\CloudRun;
 use VoltTest\Laravel\Facades\VoltTest;
 use VoltTest\Laravel\Services\ReportGenerator;
 use VoltTest\Laravel\Services\TestClassDiscoverer;
@@ -31,7 +32,8 @@ class RunVoltTestCommand extends Command
                             {--body= : Request body for URL testing (for POST/PUT)}
                             {--content-type= : Content type for URL testing}
                             {--code-status=200 : Expected HTTP status code for URL testing}
-                            {--scenario-name= : Custom scenario name for URL testing}';
+                            {--scenario-name= : Custom scenario name for URL testing}
+                            {--cloud : Run test on VoltTest Cloud}';
 
     /**
      * The console command description.
@@ -93,6 +95,11 @@ class RunVoltTestCommand extends Command
         if ($this->option('debug')) {
             $voltTest->setHttpDebug(true);
             $this->info('HTTP debugging enabled');
+        }
+
+        if ($this->option('cloud') || config('volttest.cloud.enabled', false)) {
+            VoltTest::cloud();
+            $this->info('Cloud execution mode enabled.');
         }
     }
 
@@ -180,8 +187,16 @@ class RunVoltTestCommand extends Command
     /**
      * Handle test results.
      */
-    protected function handleResults(TestResult $result): void
+    protected function handleResults(TestResult|CloudRun|null $result): void
     {
+        if ($result instanceof CloudRun) {
+            return;
+        }
+
+        if (! $result instanceof TestResult) {
+            return;
+        }
+
         if (! $this->option('stream')) {
             $this->reportGenerator->displaySummary($result, $this);
         }

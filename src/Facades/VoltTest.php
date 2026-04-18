@@ -11,8 +11,9 @@ use VoltTest\Laravel\Contracts\VoltTestCase;
 /**
  * @method static \VoltTest\VoltTest getVoltTest()
  * @method static \VoltTest\Laravel\VoltTestManager addTestFromClass(string|VoltTestCase $className)
+ * @method static \VoltTest\Laravel\VoltTestManager cloud()
  * @method static Collection getScenarios() :
- * @method static \VoltTest\TestResult run(bool $streamOutput = false)
+ * @method static \VoltTest\TestResult|\VoltTest\CloudRun run(bool $streamOutput = false)
  *
  * @see \VoltTest\Laravel\VoltTestManager
  */
