@@ -23,6 +23,7 @@ For more information about the core VoltTest functionality, visit **[php.volt-te
 - [Reports](#reports)
 - [CSV Data Sources](#csv-data-sources)
 - [PHPUnit Integration](#phpunit-integration)
+- [Stages (Ramped Load Profiles)](#stages-ramped-load-profiles)
 - [Advanced Configuration](#advanced-configuration)
 - [Testing Tips](#testing-tips)
 - [Troubleshooting](#troubleshooting)
@@ -81,10 +82,17 @@ return [
     'name' => env('VOLTTEST_NAME', 'Laravel Application Test'),
     'description' => env('VOLTTEST_DESCRIPTION', 'Performance test for Laravel application'),
 
-    // Load Configuration
+    // Load Configuration (constant load)
     'virtual_users' => env('VOLTTEST_VIRTUAL_USERS', 10),
     'duration' => env('VOLTTEST_DURATION'), // e.g., '1m', '30s', '2h'
     'ramp_up' => env('VOLTTEST_RAMP_UP', null),
+
+    // Stages (ramped load profile — overrides virtual_users/duration/ramp_up)
+    'stages' => [
+        // ['duration' => '1m', 'target' => 50],
+        // ['duration' => '5m', 'target' => 100],
+        // ['duration' => '1m', 'target' => 0],
+    ],
 
     // Debug Configuration
     'http_debug' => env('VOLTTEST_HTTP_DEBUG', false),
@@ -424,6 +432,8 @@ php artisan volttest:run [test] [options]
 |`--content-type=`|Content type for URL testing|`--content-type=application/json`|
 |`--code-status=`|Expected HTTP status code for URL testing (default: 200)|`--code-status=201`|
 |`--scenario-name=`|Custom scenario name for URL testing|`--scenario-name="API Load Test"`|
+|`--cloud`|Run test on VoltTest Cloud|`--cloud`|
+|`--stage=*`|Load stages as duration:target (repeatable)|`--stage=1m:50 --stage=5m:100`|
 
 ### Basic Execution
 
@@ -823,6 +833,103 @@ For detailed information including:
 
 **[Read the complete PHPUnit Integration guide →](docs/PHPUNIT_INTEGRATION.md)**
 
+
+## Stages (Ramped Load Profiles)
+
+Stages let you define a multi-phase load profile where virtual users ramp up and down over time. Each stage linearly transitions from the previous target to the new target over the given duration.
+
+When stages are used, `virtual_users`, `duration`, and `ramp_up` are ignored.
+
+### Via Config
+
+Define stages in `config/volttest.php`:
+
+```php
+'stages' => [
+    ['duration' => '1m', 'target' => 50],   // Ramp up to 50 VUs over 1 minute
+    ['duration' => '5m', 'target' => 100],  // Ramp up to 100 VUs over 5 minutes
+    ['duration' => '2m', 'target' => 100],  // Hold at 100 VUs for 2 minutes
+    ['duration' => '1m', 'target' => 0],    // Ramp down to 0 over 1 minute
+],
+```
+
+### Via Artisan Command
+
+Use the `--stage` option (repeatable):
+
+```bash
+php artisan volttest:run UserTest \
+    --stage=1m:50 \
+    --stage=5m:100 \
+    --stage=2m:100 \
+    --stage=1m:0
+```
+
+When `--stage` is provided, `--users` and `--duration` are ignored.
+
+### Via Facade
+
+Use the `stage()` method programmatically:
+
+```php
+use VoltTest\Laravel\Facades\VoltTest;
+
+VoltTest::stage('1m', 50)
+    ->stage('5m', 100)
+    ->stage('1m', 0);
+```
+
+### In Test Classes
+
+Call `stage()` on the manager inside your test definition:
+
+```php
+class SpikeTest implements VoltTestCase
+{
+    public function define(VoltTestManager $manager): void
+    {
+        $manager->stage('30s', 200)  // Spike to 200 VUs
+            ->stage('1m', 200)       // Hold
+            ->stage('30s', 0);       // Drop
+
+        $scenario = $manager->scenario('Spike Test');
+        $scenario->step('Homepage')->get('/')->expectStatus(200);
+    }
+}
+```
+
+### In PHPUnit Tests
+
+Pass stages in the options array:
+
+```php
+$result = $this->runVoltTest($testClass, [
+    'stages' => [
+        ['duration' => '30s', 'target' => 50],
+        ['duration' => '2m', 'target' => 50],
+        ['duration' => '30s', 'target' => 0],
+    ],
+]);
+
+$this->assertVTSuccessful($result, 95.0);
+```
+
+### Common Patterns
+
+**Ramp-up test** — gradually increase load:
+```bash
+php artisan volttest:run --stage=2m:50 --stage=2m:100 --stage=2m:200
+```
+
+**Spike test** — sudden burst of traffic:
+```bash
+php artisan volttest:run --stage=10s:500 --stage=1m:500 --stage=10s:0
+```
+
+**Soak test** — sustained load over time:
+```bash
+php artisan volttest:run --stage=1m:100 --stage=30m:100 --stage=1m:0
+```
 
 ## Testing Tips
 
