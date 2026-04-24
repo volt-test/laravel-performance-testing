@@ -277,4 +277,67 @@ class VoltTestManagerTest extends TestCase
         $scenarios = $this->manager->getScenarios();
         $this->assertCount(2, $scenarios);
     }
+
+    public function test_stage_returns_self_for_chaining(): void
+    {
+        $manager = new VoltTestManager([]);
+
+        $result = $manager->stage('1m', 50);
+
+        $this->assertSame($manager, $result);
+    }
+
+    public function test_stage_delegates_to_volt_test(): void
+    {
+        $manager = new VoltTestManager([]);
+
+        $manager->stage('1m', 50)
+            ->stage('5m', 100)
+            ->stage('1m', 0);
+
+        $this->assertInstanceOf(VoltTest::class, $manager->getVoltTest());
+    }
+
+    public function test_config_stages_applied_on_construction(): void
+    {
+        $config = [
+            'stages' => [
+                ['duration' => '1m', 'target' => 50],
+                ['duration' => '5m', 'target' => 100],
+                ['duration' => '1m', 'target' => 0],
+            ],
+        ];
+
+        $manager = new VoltTestManager($config);
+
+        $this->assertInstanceOf(VoltTest::class, $manager->getVoltTest());
+    }
+
+    public function test_config_stages_override_constant_load(): void
+    {
+        $config = [
+            'virtual_users' => 20,
+            'duration' => '30s',
+            'stages' => [
+                ['duration' => '1m', 'target' => 50],
+            ],
+        ];
+
+        $manager = new VoltTestManager($config);
+
+        $this->assertInstanceOf(VoltTest::class, $manager->getVoltTest());
+    }
+
+    public function test_empty_stages_config_uses_constant_load(): void
+    {
+        $config = [
+            'virtual_users' => 20,
+            'duration' => '30s',
+            'stages' => [],
+        ];
+
+        $manager = new VoltTestManager($config);
+
+        $this->assertInstanceOf(VoltTest::class, $manager->getVoltTest());
+    }
 }

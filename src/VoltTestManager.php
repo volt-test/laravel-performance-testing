@@ -100,6 +100,41 @@ class VoltTestManager
     }
 
     /**
+     * Add a stage to the load profile.
+     *
+     * @param string $duration Duration of this stage (e.g. "5m", "30s", "1h")
+     * @param int $target Target VU count at the end of this stage
+     * @return $this
+     * @throws VoltTestException
+     */
+    public function stage(string $duration, int $target): self
+    {
+        $this->voltTest->stage($duration, $target);
+
+        return $this;
+    }
+
+    /**
+     * Replace the VoltTest instance with a fresh one (no load profile).
+     * Use before adding stages when the default config set constant load.
+     *
+     * @return $this
+     */
+    public function resetLoadProfile(): self
+    {
+        $this->voltTest = new VoltTest(
+            $this->config['name'] ?? 'Laravel Application Test',
+            $this->config['description'] ?? 'Performance test for Laravel application'
+        );
+
+        if (isset($this->config['http_debug'])) {
+            $this->voltTest->setHttpDebug($this->config['http_debug']);
+        }
+
+        return $this;
+    }
+
+    /**
      * Enable cloud execution mode.
      *
      * @return $this
@@ -160,20 +195,26 @@ class VoltTestManager
      */
     protected function configureVoltTest(): void
     {
-        if (isset($this->config['virtual_users'])) {
-            $this->voltTest->setVirtualUsers($this->config['virtual_users']);
-        }
+        if (! empty($this->config['stages']) && is_array($this->config['stages'])) {
+            foreach ($this->config['stages'] as $stage) {
+                $this->voltTest->stage($stage['duration'], $stage['target']);
+            }
+        } else {
+            if (isset($this->config['virtual_users'])) {
+                $this->voltTest->setVirtualUsers($this->config['virtual_users']);
+            }
 
-        if (isset($this->config['duration'])) {
-            $this->voltTest->setDuration($this->config['duration']);
+            if (isset($this->config['duration'])) {
+                $this->voltTest->setDuration($this->config['duration']);
+            }
+
+            if (isset($this->config['ramp_up'])) {
+                $this->voltTest->setRampUp($this->config['ramp_up']);
+            }
         }
 
         if (isset($this->config['http_debug'])) {
             $this->voltTest->setHttpDebug($this->config['http_debug']);
-        }
-
-        if (isset($this->config['ramp_up'])) {
-            $this->voltTest->setRampUp($this->config['ramp_up']);
         }
     }
 }

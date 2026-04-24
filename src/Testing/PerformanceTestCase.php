@@ -313,20 +313,26 @@ abstract class PerformanceTestCase extends BaseTestCase
     {
         $voltTest = VoltTest::getVoltTest();
 
-        if (isset($options['virtual_users'])) {
-            $voltTest->setVirtualUsers($options['virtual_users']);
-        }
+        if (! empty($options['stages']) && is_array($options['stages'])) {
+            foreach ($options['stages'] as $stage) {
+                $voltTest->stage($stage['duration'], $stage['target']);
+            }
+        } else {
+            if (isset($options['virtual_users'])) {
+                $voltTest->setVirtualUsers($options['virtual_users']);
+            }
 
-        if (isset($options['duration'])) {
-            $voltTest->setDuration($options['duration']);
+            if (isset($options['duration'])) {
+                $voltTest->setDuration($options['duration']);
+            }
+
+            if (isset($options['ramp_up'])) {
+                $voltTest->setRampUp($options['ramp_up']);
+            }
         }
 
         if (isset($options['http_debug'])) {
             $voltTest->setHttpDebug($options['http_debug']);
-        }
-
-        if (isset($options['ramp_up'])) {
-            $voltTest->setRampUp($options['ramp_up']);
         }
     }
 
