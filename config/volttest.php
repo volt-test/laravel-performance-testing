@@ -34,6 +34,25 @@ return [
 
     /*
     |--------------------------------------------------------------------------
+    | Stages Configuration
+    |--------------------------------------------------------------------------
+    |
+    | Define stages for ramped load profiles. Each stage linearly ramps
+    | from the previous target to the new target over the given duration.
+    | When stages are set, virtual_users/duration/ramp_up are ignored.
+    |
+    | Example:
+    |   'stages' => [
+    |       ['duration' => '1m', 'target' => 50],
+    |       ['duration' => '5m', 'target' => 100],
+    |       ['duration' => '1m', 'target' => 0],
+    |   ],
+    |
+    */
+    'stages' => [],
+
+    /*
+    |--------------------------------------------------------------------------
     | Debug Configuration
     |--------------------------------------------------------------------------
     */

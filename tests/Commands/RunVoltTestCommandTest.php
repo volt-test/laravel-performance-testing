@@ -398,6 +398,57 @@ class RunVoltTestCommandTest extends TestCase
         ])->assertExitCode(0);
     }
 
+    public function test_configures_stages_when_option_provided(): void
+    {
+        $this->mockTestDiscoverer
+            ->shouldReceive('findTestClasses')
+            ->with(null)
+            ->andReturn(['App\\VoltTests\\UserTest']);
+
+        $this->mockTestRunner
+            ->shouldReceive('run')
+            ->with(false)
+            ->andReturn($this->createMockResult());
+
+        $this->mockReportGenerator->shouldIgnoreMissing();
+
+        $this->artisan('volttest:run', ['--stage' => ['1m:50', '5m:100', '1m:0']])
+            ->expectsOutput('Configured 3 stage(s)')
+            ->assertExitCode(0);
+    }
+
+    public function test_stages_skip_virtual_users_and_duration(): void
+    {
+        $this->mockTestDiscoverer
+            ->shouldReceive('findTestClasses')
+            ->with(null)
+            ->andReturn(['App\\VoltTests\\UserTest']);
+
+        $this->mockTestRunner
+            ->shouldReceive('run')
+            ->with(false)
+            ->andReturn($this->createMockResult());
+
+        $this->mockReportGenerator->shouldIgnoreMissing();
+
+        $this->artisan('volttest:run', [
+            '--stage' => ['1m:50'],
+            '--users' => '20',
+            '--duration' => '30s',
+        ])
+            ->expectsOutput('Configured 1 stage(s)')
+            ->doesntExpectOutput('Set virtual users: 20')
+            ->doesntExpectOutput('Set test duration: 30s')
+            ->assertExitCode(0);
+    }
+
+    public function test_invalid_stage_format_shows_error(): void
+    {
+        $this->artisan('volttest:run', ['--stage' => ['invalid']])
+            ->expectsOutputToContain('Invalid stage format')
+            ->assertExitCode(0);
+    }
+
     protected function createMockResult()
     {
         return new class () {

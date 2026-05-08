@@ -33,7 +33,8 @@ class RunVoltTestCommand extends Command
                             {--content-type= : Content type for URL testing}
                             {--code-status=200 : Expected HTTP status code for URL testing}
                             {--scenario-name= : Custom scenario name for URL testing}
-                            {--cloud : Run test on VoltTest Cloud}';
+                            {--cloud : Run test on VoltTest Cloud}
+                            {--stage=* : Load stages as duration:target (e.g. --stage=1m:50 --stage=5m:100 --stage=1m:0)}';
 
     /**
      * The console command description.
@@ -61,6 +62,13 @@ class RunVoltTestCommand extends Command
             $this->configureVoltTest();
             $this->setupTests();
             $result = $this->executeTests();
+
+            if ($result === null) {
+                $this->info('Test run cancelled.');
+
+                return;
+            }
+
             $this->handleResults($result);
 
             $this->info('Test completed successfully.');
@@ -78,18 +86,29 @@ class RunVoltTestCommand extends Command
     {
         $voltTest = VoltTest::getVoltTest();
 
-        $users = $this->option('users');
-        if (is_string($users)) {
-            $this->validator->validateVirtualUsers($users);
-            $voltTest->setVirtualUsers((int) $users);
-            $this->info("Set virtual users: {$users}");
-        }
+        $stages = $this->option('stage');
+        if (is_array($stages) && count($stages) > 0) {
+            VoltTest::resetLoadProfile();
+            $voltTest = VoltTest::getVoltTest();
+            foreach ($stages as $stageStr) {
+                [$duration, $target] = $this->parseStageOption($stageStr);
+                $voltTest->stage($duration, $target);
+            }
+            $this->info('Configured ' . count($stages) . ' stage(s)');
+        } else {
+            $users = $this->option('users');
+            if (is_string($users)) {
+                $this->validator->validateVirtualUsers($users);
+                $voltTest->setVirtualUsers((int) $users);
+                $this->info("Set virtual users: {$users}");
+            }
 
-        $duration = $this->option('duration');
-        if ($duration && is_string($duration)) {
-            $this->validator->validateDuration($duration);
-            $voltTest->setDuration($duration);
-            $this->info("Set test duration: {$duration}");
+            $duration = $this->option('duration');
+            if ($duration && is_string($duration)) {
+                $this->validator->validateDuration($duration);
+                $voltTest->setDuration($duration);
+                $this->info("Set test duration: {$duration}");
+            }
         }
 
         if ($this->option('debug')) {
@@ -100,7 +119,59 @@ class RunVoltTestCommand extends Command
         if ($this->option('cloud') || config('volttest.cloud.enabled', false)) {
             VoltTest::cloud();
             $this->info('Cloud execution mode enabled.');
+
+            VoltTest::setOnConflictPrompt(function (array $existingTests) {
+                if (! $this->input->isInteractive() || empty($existingTests)) {
+                    return $existingTests[0]['id'] ?? null;
+                }
+
+                $count = count($existingTests);
+                $name = $existingTests[0]['name'] ?? 'Unknown';
+                $this->warn("{$count} test(s) named '{$name}' already exist:");
+
+                $options = [];
+                foreach ($existingTests as $test) {
+                    $id = substr($test['id'] ?? '', 0, 8);
+                    $url = $test['target_url'] ?? 'N/A';
+                    $vus = $test['virtual_users'] ?? '?';
+                    $updated = $test['updated_at'] ?? '';
+                    $options[] = "Update {$id}...  Target: {$url}  VUs: {$vus}  Updated: {$updated}";
+                }
+                $options[] = 'Create new test';
+                $options[] = 'Cancel';
+
+                $choice = $this->choice('What would you like to do?', $options, 0);
+
+                if ($choice === 'Cancel') {
+                    return 'cancel';
+                }
+
+                if ($choice === 'Create new test') {
+                    return null;
+                }
+
+                $index = array_search($choice, $options);
+
+                return $existingTests[$index]['id'] ?? null;
+            });
         }
+    }
+
+    /**
+     * Parse a stage option string (e.g. "1m:50") into duration and target.
+     *
+     * @return array{0: string, 1: int}
+     */
+    protected function parseStageOption(string $stage): array
+    {
+        $parts = explode(':', $stage);
+        if (count($parts) !== 2) {
+            throw new \InvalidArgumentException(
+                "Invalid stage format '{$stage}'. Use duration:target (e.g. 1m:50)"
+            );
+        }
+
+        return [$parts[0], (int) $parts[1]];
     }
 
     /**
