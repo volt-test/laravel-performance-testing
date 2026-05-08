@@ -161,9 +161,9 @@ class VoltTestManager
      *
      * @param bool $streamOutput
      *
-     * @return TestResult|CloudRun
+     * @return TestResult|CloudRun|null
      * */
-    public function run(bool $streamOutput = false): TestResult|CloudRun
+    public function run(bool $streamOutput = false): TestResult|CloudRun|null
     {
         return $this->voltTest->run($streamOutput);
     }
