@@ -24,7 +24,7 @@ For more information about the core VoltTest functionality, visit **[php.volt-te
 - [CSV Data Sources](#csv-data-sources)
 - [PHPUnit Integration](#phpunit-integration)
 - [Stages (Ramped Load Profiles)](#stages-ramped-load-profiles)
-- [Advanced Configuration](#advanced-configuration)
+- [Cloud Execution](#cloud-execution)
 - [Testing Tips](#testing-tips)
 - [Troubleshooting](#troubleshooting)
 - [Learn More](#learn-more)
@@ -930,6 +930,57 @@ php artisan volttest:run --stage=10s:500 --stage=1m:500 --stage=10s:0
 ```bash
 php artisan volttest:run --stage=1m:100 --stage=30m:100 --stage=1m:0
 ```
+
+## Cloud Execution
+
+Run your performance tests on VoltTest Cloud for higher concurrency and distributed load generation.
+
+### Setup
+
+1. Get your API key from [app.volt-test.com/settings](https://app.volt-test.com/settings)
+2. Add it to your `.env`:
+
+```env
+VOLTTEST_CLOUD_API_KEY=vt_your_api_key_here
+```
+
+Or enable cloud mode in `config/volttest.php`:
+
+```php
+'cloud' => [
+    'enabled' => true,
+    'api_key' => env('VOLTTEST_CLOUD_API_KEY'),
+],
+```
+
+### Running on Cloud
+
+```bash
+# Run a test on cloud
+php artisan volttest:run UserTest --cloud
+
+# Cloud with stages
+php artisan volttest:run UserTest --cloud --stage=1m:100 --stage=5m:500 --stage=1m:0
+```
+
+### Test Name Conflict Resolution
+
+When you run a cloud test, VoltTest checks if a test with the same name already exists in your organization. If it does, you'll be prompted to choose:
+
+```
+2 test(s) named 'UserTest' already exist:
+  [1] Update 3a8f1b2c...  Target: https://example.com  VUs: 100  Updated: 2026-05-08
+  [2] Update 9d4e5f6a...  Target: https://staging.example.com  VUs: 50  Updated: 2026-05-07
+  [3] Create new test
+  [4] Cancel
+> 
+```
+
+- **Update existing** — reuses the selected test and starts a new run against it
+- **Create new test** — creates a separate test entry even though the name matches
+- **Cancel** — aborts the test run without creating or updating anything
+
+In non-interactive environments (CI/CD, `--no-interaction`), VoltTest defaults to updating the most recent existing test.
 
 ## Testing Tips
 
