@@ -62,6 +62,13 @@ class RunVoltTestCommand extends Command
             $this->configureVoltTest();
             $this->setupTests();
             $result = $this->executeTests();
+
+            if ($result === null) {
+                $this->info('Test run cancelled.');
+
+                return;
+            }
+
             $this->handleResults($result);
 
             $this->info('Test completed successfully.');
@@ -112,6 +119,41 @@ class RunVoltTestCommand extends Command
         if ($this->option('cloud') || config('volttest.cloud.enabled', false)) {
             VoltTest::cloud();
             $this->info('Cloud execution mode enabled.');
+
+            VoltTest::setOnConflictPrompt(function (array $existingTests) {
+                if (! $this->input->isInteractive() || empty($existingTests)) {
+                    return $existingTests[0]['id'] ?? null;
+                }
+
+                $count = count($existingTests);
+                $name = $existingTests[0]['name'] ?? 'Unknown';
+                $this->warn("{$count} test(s) named '{$name}' already exist:");
+
+                $options = [];
+                foreach ($existingTests as $test) {
+                    $id = substr($test['id'] ?? '', 0, 8);
+                    $url = $test['target_url'] ?? 'N/A';
+                    $vus = $test['virtual_users'] ?? '?';
+                    $updated = $test['updated_at'] ?? '';
+                    $options[] = "Update {$id}...  Target: {$url}  VUs: {$vus}  Updated: {$updated}";
+                }
+                $options[] = 'Create new test';
+                $options[] = 'Cancel';
+
+                $choice = $this->choice('What would you like to do?', $options, 0);
+
+                if ($choice === 'Cancel') {
+                    return 'cancel';
+                }
+
+                if ($choice === 'Create new test') {
+                    return null;
+                }
+
+                $index = array_search($choice, $options);
+
+                return $existingTests[$index]['id'] ?? null;
+            });
         }
     }
 

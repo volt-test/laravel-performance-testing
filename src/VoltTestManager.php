@@ -169,6 +169,19 @@ class VoltTestManager
     }
 
     /**
+     * Set a custom conflict prompt callback for when a test with the same name already exists.
+     *
+     * @param callable $callback Receives the existing test array, must return 'update' or 'create'
+     * @return $this
+     */
+    public function setOnConflictPrompt(callable $callback): self
+    {
+        $this->voltTest->setOnConflictPrompt($callback);
+
+        return $this;
+    }
+
+    /**
      * Get the underlying VoltTest instance.
      *
      * @return VoltTest

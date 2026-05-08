@@ -76,6 +76,7 @@ class RunVoltTestCommandCloudTest extends TestCase
         $mockManager->shouldReceive('cloud')
             ->once()
             ->andReturnSelf();
+        $mockManager->shouldReceive('setOnConflictPrompt')->andReturnSelf();
         $mockManager->shouldReceive('addTestFromClass')
             ->andReturnSelf();
         $mockManager->shouldReceive('run')
@@ -106,6 +107,7 @@ class RunVoltTestCommandCloudTest extends TestCase
         $mockManager->shouldReceive('cloud')
             ->once()
             ->andReturnSelf();
+        $mockManager->shouldReceive('setOnConflictPrompt')->andReturnSelf();
         $mockManager->shouldReceive('addTestFromClass')
             ->andReturnSelf();
         $mockManager->shouldReceive('run')
@@ -158,6 +160,7 @@ class RunVoltTestCommandCloudTest extends TestCase
         $mockManager->shouldReceive('getVoltTest')
             ->andReturn(Mockery::mock(\VoltTest\VoltTest::class)->shouldIgnoreMissing());
         $mockManager->shouldReceive('cloud')->andReturnSelf();
+        $mockManager->shouldReceive('setOnConflictPrompt')->andReturnSelf();
         $mockManager->shouldReceive('addTestFromClass')->andReturnSelf();
         $mockManager->shouldReceive('run')
             ->andReturn(new CloudRun('run-1', 'test-1', 'completed'));
@@ -219,6 +222,7 @@ class RunVoltTestCommandCloudTest extends TestCase
         $mockManager->shouldReceive('getVoltTest')
             ->andReturn(Mockery::mock(\VoltTest\VoltTest::class)->shouldIgnoreMissing());
         $mockManager->shouldReceive('cloud')->once()->andReturnSelf();
+        $mockManager->shouldReceive('setOnConflictPrompt')->andReturnSelf();
         $mockManager->shouldReceive('addTestFromClass')->andReturnSelf();
         $mockManager->shouldReceive('run')
             ->andReturn(new CloudRun('run-1', 'test-1', 'completed'));
@@ -269,6 +273,78 @@ class RunVoltTestCommandCloudTest extends TestCase
         $this->artisan('volttest:run', ['--cloud' => true])
             ->expectsOutputToContain('Cloud API key is required')
             ->assertExitCode(0);
+    }
+
+    public function test_cloud_registers_conflict_prompt(): void
+    {
+        $mockManager = Mockery::mock(VoltTestManager::class);
+        $mockManager->shouldReceive('getVoltTest')
+            ->andReturn(Mockery::mock(\VoltTest\VoltTest::class)->shouldIgnoreMissing());
+        $mockManager->shouldReceive('cloud')
+            ->once()
+            ->andReturnSelf();
+        $mockManager->shouldReceive('setOnConflictPrompt')
+            ->once()
+            ->with(Mockery::type('callable'))
+            ->andReturnSelf();
+        $mockManager->shouldReceive('addTestFromClass')
+            ->andReturnSelf();
+        $mockManager->shouldReceive('run')
+            ->andReturn(new CloudRun('run-1', 'test-1', 'completed'));
+
+        $this->app->instance('laravel-volttest', $mockManager);
+
+        $this->mockValidator->shouldIgnoreMissing();
+        $this->mockTestDiscoverer
+            ->shouldReceive('findTestClasses')
+            ->andReturn(['App\\VoltTests\\UserTest']);
+        $this->mockTestRunner
+            ->shouldReceive('run')
+            ->andReturn(new CloudRun('run-1', 'test-1', 'completed'));
+
+        $this->artisan('volttest:run', ['--cloud' => true])
+            ->expectsOutput('Cloud execution mode enabled.')
+            ->assertExitCode(0);
+    }
+
+    public function test_cloud_conflict_prompt_includes_cancel_option(): void
+    {
+        $mockManager = Mockery::mock(VoltTestManager::class);
+        $mockManager->shouldReceive('getVoltTest')
+            ->andReturn(Mockery::mock(\VoltTest\VoltTest::class)->shouldIgnoreMissing());
+        $mockManager->shouldReceive('cloud')
+            ->once()
+            ->andReturnSelf();
+
+        $capturedCallback = null;
+        $mockManager->shouldReceive('setOnConflictPrompt')
+            ->once()
+            ->with(Mockery::on(function ($callback) use (&$capturedCallback) {
+                $capturedCallback = $callback;
+
+                return is_callable($callback);
+            }))
+            ->andReturnSelf();
+        $mockManager->shouldReceive('addTestFromClass')
+            ->andReturnSelf();
+        $mockManager->shouldReceive('run')
+            ->andReturn(new CloudRun('run-1', 'test-1', 'completed'));
+
+        $this->app->instance('laravel-volttest', $mockManager);
+
+        $this->mockValidator->shouldIgnoreMissing();
+        $this->mockTestDiscoverer
+            ->shouldReceive('findTestClasses')
+            ->andReturn(['App\\VoltTests\\UserTest']);
+        $this->mockTestRunner
+            ->shouldReceive('run')
+            ->andReturn(new CloudRun('run-1', 'test-1', 'completed'));
+
+        $this->artisan('volttest:run', ['--cloud' => true])
+            ->assertExitCode(0);
+
+        $this->assertNotNull($capturedCallback, 'Conflict prompt callback was not registered');
+        $this->assertIsCallable($capturedCallback);
     }
 
     protected function createMockResult(): TestResult
