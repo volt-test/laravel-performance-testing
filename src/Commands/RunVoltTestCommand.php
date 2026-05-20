@@ -151,7 +151,7 @@ class RunVoltTestCommand extends Command
                     return null;
                 }
 
-                $index = array_search($choice, $options);
+                $index = array_search($choice, $options, true);
 
                 return $existingTests[$index]['id'] ?? null;
             });

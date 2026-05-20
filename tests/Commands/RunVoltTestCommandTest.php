@@ -499,6 +499,11 @@ class RunVoltTestCommandTest extends TestCase
 
     public function test_invalid_region_format_shows_error(): void
     {
+        $this->mockValidator
+            ->shouldReceive('validateVirtualUsers')
+            ->with('10')
+            ->once();
+
         $this->artisan('volttest:run', ['--region' => ['invalid']])
             ->expectsOutputToContain('Invalid region format')
             ->assertExitCode(0);
