@@ -135,6 +135,20 @@ class VoltTestManager
     }
 
     /**
+     * Set region distribution for cloud execution.
+     *
+     * @param array<string, int> $regions Region code => weight (e.g., ['us-east-1' => 60, 'eu-west-1' => 40])
+     * @return $this
+     * @throws VoltTestException
+     */
+    public function regions(array $regions): self
+    {
+        $this->voltTest->regions($regions);
+
+        return $this;
+    }
+
+    /**
      * Enable cloud execution mode.
      *
      * @return $this
@@ -228,6 +242,10 @@ class VoltTestManager
 
         if (isset($this->config['http_debug'])) {
             $this->voltTest->setHttpDebug($this->config['http_debug']);
+        }
+
+        if (! empty($this->config['regions']) && is_array($this->config['regions'])) {
+            $this->voltTest->regions($this->config['regions']);
         }
     }
 }

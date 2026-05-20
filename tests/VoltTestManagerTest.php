@@ -340,4 +340,47 @@ class VoltTestManagerTest extends TestCase
 
         $this->assertInstanceOf(VoltTest::class, $manager->getVoltTest());
     }
+
+    public function test_regions_returns_self_for_chaining(): void
+    {
+        $manager = new VoltTestManager([]);
+
+        $result = $manager->regions(['us-east-1' => 100]);
+
+        $this->assertSame($manager, $result);
+    }
+
+    public function test_regions_delegates_to_volt_test(): void
+    {
+        $manager = new VoltTestManager([]);
+
+        $manager->regions(['us-east-1' => 60, 'eu-west-1' => 40]);
+
+        $this->assertInstanceOf(VoltTest::class, $manager->getVoltTest());
+    }
+
+    public function test_config_regions_applied_on_construction(): void
+    {
+        $config = [
+            'regions' => [
+                'us-east-1' => 60,
+                'eu-west-1' => 40,
+            ],
+        ];
+
+        $manager = new VoltTestManager($config);
+
+        $this->assertInstanceOf(VoltTest::class, $manager->getVoltTest());
+    }
+
+    public function test_empty_regions_config_is_ignored(): void
+    {
+        $config = [
+            'regions' => [],
+        ];
+
+        $manager = new VoltTestManager($config);
+
+        $this->assertInstanceOf(VoltTest::class, $manager->getVoltTest());
+    }
 }

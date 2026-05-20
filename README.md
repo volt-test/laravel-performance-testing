@@ -25,6 +25,7 @@ For more information about the core VoltTest functionality, visit **[php.volt-te
 - [PHPUnit Integration](#phpunit-integration)
 - [Stages (Ramped Load Profiles)](#stages-ramped-load-profiles)
 - [Cloud Execution](#cloud-execution)
+- [Region Distribution](#region-distribution)
 - [Testing Tips](#testing-tips)
 - [Troubleshooting](#troubleshooting)
 - [Learn More](#learn-more)
@@ -92,6 +93,12 @@ return [
         // ['duration' => '1m', 'target' => 50],
         // ['duration' => '5m', 'target' => 100],
         // ['duration' => '1m', 'target' => 0],
+    ],
+
+    // Region Distribution (weights must sum to 100)
+    'regions' => [
+        // 'us-east-1' => 60,
+        // 'eu-west-1' => 40,
     ],
 
     // Debug Configuration
@@ -434,6 +441,7 @@ php artisan volttest:run [test] [options]
 |`--scenario-name=`|Custom scenario name for URL testing|`--scenario-name="API Load Test"`|
 |`--cloud`|Run test on VoltTest Cloud|`--cloud`|
 |`--stage=*`|Load stages as duration:target (repeatable)|`--stage=1m:50 --stage=5m:100`|
+|`--region=*`|Region distribution as region:weight (repeatable)|`--region=us-east-1:60 --region=eu-west-1:40`|
 
 ### Basic Execution
 
@@ -981,6 +989,96 @@ When you run a cloud test, VoltTest checks if a test with the same name already 
 - **Cancel** — aborts the test run without creating or updating anything
 
 In non-interactive environments (CI/CD, `--no-interaction`), VoltTest defaults to updating the most recent existing test.
+
+## Region Distribution
+
+Distribute load testing across multiple AWS regions simultaneously. Each region receives a percentage of the total virtual users based on the configured weights.
+
+### Via Config
+
+Define regions in `config/volttest.php`:
+
+```php
+'regions' => [
+    'us-east-1' => 60,   // 60% of VUs in US East
+    'eu-west-1' => 40,   // 40% of VUs in EU West
+],
+```
+
+### Via Artisan Command
+
+Use the `--region` option (repeatable):
+
+```bash
+php artisan volttest:run UserTest \
+    --region=us-east-1:60 \
+    --region=eu-west-1:40
+```
+
+Combined with cloud and stages:
+
+```bash
+php artisan volttest:run UserTest --cloud \
+    --stage=1m:50 --stage=5m:500 --stage=1m:0 \
+    --region=us-east-1:50 --region=eu-west-1:30 --region=ap-southeast-1:20
+```
+
+### Via Facade
+
+Use the `regions()` method programmatically:
+
+```php
+use VoltTest\Laravel\Facades\VoltTest;
+
+VoltTest::cloud()
+    ->regions([
+        'us-east-1' => 60,
+        'eu-west-1' => 40,
+    ])
+    ->stage('1m', 100)
+    ->stage('5m', 500)
+    ->stage('1m', 0);
+```
+
+### In Test Classes
+
+Call `regions()` on the manager inside your test definition:
+
+```php
+class GeoDistributedTest implements VoltTestCase
+{
+    public function define(VoltTestManager $manager): void
+    {
+        $manager->regions([
+            'us-east-1' => 50,
+            'eu-west-1' => 30,
+            'ap-southeast-1' => 20,
+        ]);
+
+        $scenario = $manager->scenario('Multi-Region API Test');
+        $scenario->step('Health Check')
+            ->get('/api/health')
+            ->expectStatus(200);
+    }
+}
+```
+
+### Single Region
+
+For a single region, use a weight of 100:
+
+```bash
+php artisan volttest:run --region=eu-west-1:100
+```
+
+When no regions are configured, the test runs in the default region.
+
+### Validation Rules
+
+- Weights must sum to exactly 100
+- Each weight must be a positive integer (> 0)
+- Region codes must be non-empty strings (e.g., `us-east-1`, `eu-west-1`)
+- At least one region must be specified
 
 ## Testing Tips
 

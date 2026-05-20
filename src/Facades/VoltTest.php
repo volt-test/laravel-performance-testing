@@ -12,6 +12,7 @@ use VoltTest\Laravel\Contracts\VoltTestCase;
  * @method static \VoltTest\VoltTest getVoltTest()
  * @method static \VoltTest\Laravel\VoltTestManager addTestFromClass(string|VoltTestCase $className)
  * @method static \VoltTest\Laravel\VoltTestManager stage(string $duration, int $target)
+ * @method static \VoltTest\Laravel\VoltTestManager regions(array $regions)
  * @method static \VoltTest\Laravel\VoltTestManager resetLoadProfile()
  * @method static \VoltTest\Laravel\VoltTestManager cloud()
  * @method static Collection getScenarios()

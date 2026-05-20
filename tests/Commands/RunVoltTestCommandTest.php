@@ -449,6 +449,61 @@ class RunVoltTestCommandTest extends TestCase
             ->assertExitCode(0);
     }
 
+    public function test_configures_regions_when_option_provided(): void
+    {
+        $this->mockValidator
+            ->shouldReceive('validateVirtualUsers')
+            ->with('10')
+            ->once();
+
+        $this->mockTestDiscoverer
+            ->shouldReceive('findTestClasses')
+            ->with(null)
+            ->andReturn(['App\\VoltTests\\UserTest']);
+
+        $this->mockTestRunner
+            ->shouldReceive('run')
+            ->with(false)
+            ->andReturn($this->createMockResult());
+
+        $this->mockReportGenerator->shouldIgnoreMissing();
+
+        $this->artisan('volttest:run', ['--region' => ['us-east-1:60', 'eu-west-1:40']])
+            ->expectsOutput('Configured 2 region(s)')
+            ->assertExitCode(0);
+    }
+
+    public function test_configures_single_region_when_option_provided(): void
+    {
+        $this->mockValidator
+            ->shouldReceive('validateVirtualUsers')
+            ->with('10')
+            ->once();
+
+        $this->mockTestDiscoverer
+            ->shouldReceive('findTestClasses')
+            ->with(null)
+            ->andReturn(['App\\VoltTests\\UserTest']);
+
+        $this->mockTestRunner
+            ->shouldReceive('run')
+            ->with(false)
+            ->andReturn($this->createMockResult());
+
+        $this->mockReportGenerator->shouldIgnoreMissing();
+
+        $this->artisan('volttest:run', ['--region' => ['us-east-1:100']])
+            ->expectsOutput('Configured 1 region(s)')
+            ->assertExitCode(0);
+    }
+
+    public function test_invalid_region_format_shows_error(): void
+    {
+        $this->artisan('volttest:run', ['--region' => ['invalid']])
+            ->expectsOutputToContain('Invalid region format')
+            ->assertExitCode(0);
+    }
+
     protected function createMockResult()
     {
         return new class () {
