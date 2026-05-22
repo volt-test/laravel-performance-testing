@@ -248,4 +248,18 @@ class VoltTestManager
             $this->voltTest->regions($this->config['regions']);
         }
     }
+
+    public function name(string $name): self
+    {
+        $this->voltTest->setName($name);
+
+        return $this;
+    }
+
+    public function description(string $description): self
+    {
+        $this->voltTest->setDescription($description);
+
+        return $this;
+    }
 }

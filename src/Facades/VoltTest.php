@@ -16,6 +16,8 @@ use VoltTest\Laravel\Contracts\VoltTestCase;
  * @method static \VoltTest\Laravel\VoltTestManager resetLoadProfile()
  * @method static \VoltTest\Laravel\VoltTestManager cloud()
  * @method static \VoltTest\Laravel\VoltTestManager setOnConflictPrompt(callable $callback)
+ * @method static \VoltTest\Laravel\VoltTestManager name(string $name)
+ * @method static \VoltTest\Laravel\VoltTestManager description(string $description)
  * @method static Collection getScenarios()
  * @method static \VoltTest\TestResult|\VoltTest\CloudRun run(bool $streamOutput = false)
  *

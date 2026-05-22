@@ -383,4 +383,58 @@ class VoltTestManagerTest extends TestCase
 
         $this->assertInstanceOf(VoltTest::class, $manager->getVoltTest());
     }
+
+    public function test_name_returns_self_for_chaining(): void
+    {
+        $result = $this->manager->name('New Name');
+
+        $this->assertSame($this->manager, $result);
+    }
+
+    public function test_description_returns_self_for_chaining(): void
+    {
+        $result = $this->manager->description('New Description');
+
+        $this->assertSame($this->manager, $result);
+    }
+
+    public function test_name_and_description_chaining(): void
+    {
+        $result = $this->manager
+            ->name('My Test')
+            ->description('My Description');
+
+        $this->assertSame($this->manager, $result);
+    }
+
+    public function test_name_delegates_to_volt_test(): void
+    {
+        $this->manager->name('Updated Name');
+
+        $this->assertInstanceOf(VoltTest::class, $this->manager->getVoltTest());
+    }
+
+    public function test_description_delegates_to_volt_test(): void
+    {
+        $this->manager->description('Updated Description');
+
+        $this->assertInstanceOf(VoltTest::class, $this->manager->getVoltTest());
+    }
+
+    public function test_test_case_can_set_name_and_description(): void
+    {
+        $testInstance = new class () implements VoltTestCase {
+            public function define(VoltTestManager $manager): void
+            {
+                $manager->name('Custom Test Name')
+                    ->description('Custom Description');
+                $manager->scenario('Test Scenario');
+            }
+        };
+
+        $result = $this->manager->addTestFromClass($testInstance);
+
+        $this->assertSame($this->manager, $result);
+        $this->assertFalse($this->manager->getScenarios()->isEmpty());
+    }
 }
