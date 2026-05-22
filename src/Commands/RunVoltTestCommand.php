@@ -23,7 +23,7 @@ class RunVoltTestCommand extends Command
                             {test? : The test class to run OR URL to test}
                             {--path= : Path to search for test classes}
                             {--debug : Enable HTTP debugging}
-                            {--users=10 : Number of virtual users}
+                            {--users= : Number of virtual users (default: 10 when no stages are defined)}
                             {--duration= : (Optional) Test duration}
                             {--stream : Stream test output to console}
                             {--url : Treat the test argument as a URL for direct load testing}
@@ -62,6 +62,7 @@ class RunVoltTestCommand extends Command
         try {
             $this->configureVoltTest();
             $this->setupTests();
+            $this->applyDefaultLoadProfile();
             $result = $this->executeTests();
 
             if ($result === null) {
@@ -98,7 +99,7 @@ class RunVoltTestCommand extends Command
             $this->info('Configured ' . count($stages) . ' stage(s)');
         } else {
             $users = $this->option('users');
-            if (is_string($users)) {
+            if ($users !== '' && is_string($users)) {
                 $this->validator->validateVirtualUsers($users);
                 $voltTest->setVirtualUsers((int) $users);
                 $this->info("Set virtual users: {$users}");
@@ -166,6 +167,26 @@ class RunVoltTestCommand extends Command
             }
             $voltTest->regions($regionConfig);
             $this->info('Configured ' . count($regions) . ' region(s)');
+        }
+    }
+
+    /**
+     * Apply default load profile after test setup.
+     * Sets 10 virtual users if no stages were defined (by CLI, config, or test class)
+     * and no explicit --users was provided.
+     */
+    protected function applyDefaultLoadProfile(): void
+    {
+        $voltTest = VoltTest::getVoltTest();
+        $stages = $this->option('stage');
+        $users = $this->option('users');
+
+        $hasCliStages = is_array($stages) && count($stages) > 0;
+        $hasExplicitUsers = $users !== null && $users !== '';
+
+        if (! $hasCliStages && ! $hasExplicitUsers && ! $voltTest->hasStages()) {
+            $voltTest->setVirtualUsers(10);
+            $this->info('Set virtual users: 10 (default)');
         }
     }
 

@@ -102,11 +102,6 @@ class RunVoltTestCommandTest extends TestCase
     public function test_configures_duration_when_option_provided(): void
     {
         $this->mockValidator
-            ->shouldReceive('validateVirtualUsers')
-            ->with('10')
-            ->once();
-
-        $this->mockValidator
             ->shouldReceive('validateDuration')
             ->with('60s')
             ->once();
@@ -131,11 +126,6 @@ class RunVoltTestCommandTest extends TestCase
 
     public function test_enables_debug_mode_when_option_provided(): void
     {
-        $this->mockValidator
-            ->shouldReceive('validateVirtualUsers')
-            ->with('10')
-            ->once();
-
         $this->mockTestDiscoverer
             ->shouldReceive('findTestClasses')
             ->andReturn(['App\\VoltTests\\UserTest']);
@@ -153,11 +143,6 @@ class RunVoltTestCommandTest extends TestCase
 
     public function test_runs_url_test_when_url_option_provided(): void
     {
-        $this->mockValidator
-            ->shouldReceive('validateVirtualUsers')
-            ->with('10')
-            ->once();
-
         $url = 'https://example.com';
         $mockTestClass = Mockery::mock(VoltTestCase::class);
 
@@ -196,11 +181,6 @@ class RunVoltTestCommandTest extends TestCase
 
     public function test_runs_specific_test_class_when_provided(): void
     {
-        $this->mockValidator
-            ->shouldReceive('validateVirtualUsers')
-            ->with('10')
-            ->once();
-
         $testClass = 'UserTest';
 
         $this->mockUrlTestCreator
@@ -232,11 +212,6 @@ class RunVoltTestCommandTest extends TestCase
 
     public function test_discovers_all_test_classes_when_no_specific_test_provided(): void
     {
-        $this->mockValidator
-            ->shouldReceive('validateVirtualUsers')
-            ->with('10')
-            ->once();
-
         $testClasses = [
             'App\\VoltTests\\UserTest',
             'App\\VoltTests\\OrderTest',
@@ -280,11 +255,6 @@ class RunVoltTestCommandTest extends TestCase
 
     public function test_uses_custom_path_when_provided(): void
     {
-        $this->mockValidator
-            ->shouldReceive('validateVirtualUsers')
-            ->with('10')
-            ->once();
-
         $customPath = 'app/customTests/path';
 
         $this->mockValidator
@@ -361,13 +331,6 @@ class RunVoltTestCommandTest extends TestCase
     public function test_handles_invalid_json_headers_gracefully(): void
     {
         $url = 'https://example.com';
-
-        $this->mockValidator
-            ->shouldReceive('validateVirtualUsers')
-            ->with('10')
-            ->once();
-
-
 
         $this->mockValidator->shouldIgnoreMissing();
 
@@ -451,11 +414,6 @@ class RunVoltTestCommandTest extends TestCase
 
     public function test_configures_regions_when_option_provided(): void
     {
-        $this->mockValidator
-            ->shouldReceive('validateVirtualUsers')
-            ->with('10')
-            ->once();
-
         $this->mockTestDiscoverer
             ->shouldReceive('findTestClasses')
             ->with(null)
@@ -475,11 +433,6 @@ class RunVoltTestCommandTest extends TestCase
 
     public function test_configures_single_region_when_option_provided(): void
     {
-        $this->mockValidator
-            ->shouldReceive('validateVirtualUsers')
-            ->with('10')
-            ->once();
-
         $this->mockTestDiscoverer
             ->shouldReceive('findTestClasses')
             ->with(null)
@@ -499,11 +452,6 @@ class RunVoltTestCommandTest extends TestCase
 
     public function test_invalid_region_format_shows_error(): void
     {
-        $this->mockValidator
-            ->shouldReceive('validateVirtualUsers')
-            ->with('10')
-            ->once();
-
         $this->artisan('volttest:run', ['--region' => ['invalid']])
             ->expectsOutputToContain('Invalid region format')
             ->assertExitCode(0);
