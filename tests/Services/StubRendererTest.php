@@ -113,6 +113,34 @@ PHP;
         $this->assertStringContainsString('csrf_token', $result);
     }
 
+    public function test_it_includes_target_from_config(): void
+    {
+        $this->app['config']->set('volttest.base_url', 'https://api.example.com');
+
+        $this->mockGenerator
+            ->shouldReceive('generate')
+            ->with([])
+            ->andReturn('// Routes');
+
+        $result = $this->renderer->render('TargetTest', []);
+
+        $this->assertStringContainsString("->target('https://api.example.com')", $result);
+    }
+
+    public function test_it_uses_default_target_when_config_not_set(): void
+    {
+        $this->app['config']->set('volttest.base_url', null);
+
+        $this->mockGenerator
+            ->shouldReceive('generate')
+            ->with([])
+            ->andReturn('// Routes');
+
+        $result = $this->renderer->render('DefaultTargetTest', []);
+
+        $this->assertStringContainsString("->target('http://localhost:8000')", $result);
+    }
+
     public function test_it_handles_empty_routes_array(): void
     {
         $this->mockGenerator

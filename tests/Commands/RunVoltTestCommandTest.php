@@ -6,6 +6,7 @@ namespace VoltTest\Laravel\Tests\Commands;
 
 use Mockery;
 use Orchestra\Testbench\TestCase;
+use VoltTest\Exceptions\ErrorHandler;
 use VoltTest\Laravel\Commands\RunVoltTestCommand;
 use VoltTest\Laravel\Contracts\VoltTestCase;
 use VoltTest\Laravel\Services\ReportGenerator;
@@ -56,6 +57,7 @@ class RunVoltTestCommandTest extends TestCase
 
     protected function tearDown(): void
     {
+        ErrorHandler::unregister();
         Mockery::close();
         parent::tearDown();
     }
@@ -455,6 +457,33 @@ class RunVoltTestCommandTest extends TestCase
         $this->artisan('volttest:run', ['--region' => ['invalid']])
             ->expectsOutputToContain('Invalid region format')
             ->assertExitCode(0);
+    }
+
+    public function test_configures_target_when_option_provided(): void
+    {
+        $this->mockTestDiscoverer
+            ->shouldReceive('findTestClasses')
+            ->with(null)
+            ->andReturn(['App\\VoltTests\\UserTest']);
+
+        $this->mockTestRunner
+            ->shouldReceive('run')
+            ->with(false)
+            ->andReturn($this->createMockResult());
+
+        $this->mockReportGenerator->shouldIgnoreMissing();
+
+        $this->artisan('volttest:run', ['--target' => 'https://api.example.com'])
+            ->expectsOutput('Set target: https://api.example.com')
+            ->assertExitCode(0);
+    }
+
+    public function test_command_has_target_option_in_signature(): void
+    {
+        $command = $this->app->make(RunVoltTestCommand::class);
+        $definition = $command->getDefinition();
+
+        $this->assertTrue($definition->hasOption('target'));
     }
 
     protected function createMockResult()

@@ -149,6 +149,9 @@ class UserTest implements VoltTestCase
 {
     public function define(VoltTestManager $manager): void
     {
+        // Set the target URL
+        $manager->target('http://localhost:8000');
+
         $scenario = $manager->scenario('UserTest');
 
         // Step 1: Home Page
@@ -248,6 +251,8 @@ class CheckoutTest implements VoltTestCase
 {
     public function define(VoltTestManager $manager): void
     {
+        $manager->target('http://localhost:8000');
+
         $scenario = $manager->scenario('E-commerce Checkout Flow');
 
         // Browse products
@@ -302,6 +307,8 @@ class ApiTest implements VoltTestCase
 {
     public function define(VoltTestManager $manager): void
     {
+        $manager->target('http://localhost:8000');
+
         $scenario = $manager->scenario('API Performance Test');
 
         // Login to get token - Using headers directly in the request method
@@ -439,6 +446,7 @@ php artisan volttest:run [test] [options]
 |`--content-type=`|Content type for URL testing|`--content-type=application/json`|
 |`--code-status=`|Expected HTTP status code for URL testing (default: 200)|`--code-status=201`|
 |`--scenario-name=`|Custom scenario name for URL testing|`--scenario-name="API Load Test"`|
+|`--target=`|Target base URL (overrides config base_url)|`--target=https://api.example.com`|
 |`--cloud`|Run test on VoltTest Cloud|`--cloud`|
 |`--stage=*`|Load stages as duration:target (repeatable)|`--stage=1m:50 --stage=5m:100`|
 |`--region=*`|Region distribution as region:weight (repeatable)|`--region=us-east-1:60 --region=eu-west-1:40`|
@@ -599,6 +607,8 @@ class RegisterTest implements VoltTestCase
 {
     public function define(VoltTestManager $manager): void
     {
+        $manager->target('http://localhost:8000');
+
         // Configure CSV data source
         $scenario = $manager->scenario('RegisterTest')
             ->dataSource('users.csv');
@@ -686,6 +696,8 @@ class HomePagePerformanceTest extends PerformanceTestCase
         $testClass = new class implements VoltTestCase {
             public function define(VoltTestManager $manager): void
             {
+                $manager->target('http://localhost:8000');
+
                 $scenario = $manager->scenario('Homepage Load Test');
 
                 $scenario->step('Load Homepage')
@@ -767,6 +779,8 @@ class RegistrationTest implements VoltTestCase
 {
     public function define(VoltTestManager $manager): void
     {
+        $manager->target('http://localhost:8000');
+
         $scenario = $manager->scenario('RegistrationTest')
             ->dataSource('registration_users.csv', 'sequential');
 
@@ -896,6 +910,8 @@ class SpikeTest implements VoltTestCase
 {
     public function define(VoltTestManager $manager): void
     {
+        $manager->target('http://localhost:8000');
+
         $manager->stage('30s', 200)  // Spike to 200 VUs
             ->stage('1m', 200)       // Hold
             ->stage('30s', 0);       // Drop
@@ -1049,6 +1065,8 @@ class GeoDistributedTest implements VoltTestCase
 {
     public function define(VoltTestManager $manager): void
     {
+        $manager->target('https://api.example.com');
+
         $manager->regions([
             'us-east-1' => 50,
             'eu-west-1' => 30,

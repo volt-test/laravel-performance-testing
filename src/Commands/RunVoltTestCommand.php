@@ -35,7 +35,8 @@ class RunVoltTestCommand extends Command
                             {--scenario-name= : Custom scenario name for URL testing}
                             {--cloud : Run test on VoltTest Cloud}
                             {--stage=* : Load stages as duration:target (e.g. --stage=1m:50 --stage=5m:100 --stage=1m:0)}
-                            {--region=* : Region distribution as region:weight (e.g. --region=us-east-1:60 --region=eu-west-1:40)}';
+                            {--region=* : Region distribution as region:weight (e.g. --region=us-east-1:60 --region=eu-west-1:40)}
+                            {--target= : Target base URL (overrides config base_url)}';
 
     /**
      * The console command description.
@@ -156,6 +157,12 @@ class RunVoltTestCommand extends Command
 
                 return $existingTests[$index]['id'] ?? null;
             });
+        }
+
+        $target = $this->option('target');
+        if ($target && is_string($target)) {
+            VoltTest::target($target);
+            $this->info("Set target: {$target}");
         }
 
         $regions = $this->option('region');

@@ -35,6 +35,8 @@ class VoltTestManager
      * */
     protected Collection $scenarios;
 
+    protected bool $targetSet = false;
+
     /**
      * Create a new VoltTestManager instance
      *
@@ -179,6 +181,13 @@ class VoltTestManager
      * */
     public function run(bool $streamOutput = false): TestResult|CloudRun|null
     {
+        if (! $this->targetSet) {
+            $baseUrl = $this->config['base_url'] ?? null;
+            if (! empty($baseUrl)) {
+                $this->voltTest->target($baseUrl);
+            }
+        }
+
         return $this->voltTest->run($streamOutput);
     }
 
@@ -247,6 +256,22 @@ class VoltTestManager
         if (! empty($this->config['regions']) && is_array($this->config['regions'])) {
             $this->voltTest->regions($this->config['regions']);
         }
+    }
+
+    /**
+     * Set the target URL and idle timeout.
+     *
+     * @param string $url The base URL of the target (e.g. "https://api.example.com")
+     * @param string $idleTimeout Default is 30s. Example: 1s, 1m, 1h
+     * @return $this
+     * @throws VoltTestException
+     */
+    public function target(string $url, string $idleTimeout = '30s'): self
+    {
+        $this->voltTest->target($url, $idleTimeout);
+        $this->targetSet = true;
+
+        return $this;
     }
 
     public function name(string $name): self
