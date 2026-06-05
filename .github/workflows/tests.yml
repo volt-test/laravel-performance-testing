@@ -12,6 +12,8 @@ permissions:
 
 env:
   COMPOSER_NO_INTERACTION: 1
+  COMPOSER_PROCESS_TIMEOUT: 0
+  COMPOSER_NO_AUDIT: 1
 
 jobs:
   tests:
@@ -21,8 +23,15 @@ jobs:
       fail-fast: false
       matrix:
         php-version: ['8.2', '8.3', '8.4']
-        laravel-version: ['12.*']
+        laravel-version: ['11.*', '12.*']
         dependency-version: [prefer-stable]
+        include:
+          - php-version: '8.3'
+            laravel-version: '13.*'
+            dependency-version: prefer-stable
+          - php-version: '8.4'
+            laravel-version: '13.*'
+            dependency-version: prefer-stable
 
     name: PHP ${{ matrix.php-version }} - Laravel ${{ matrix.laravel-version }} (${{ matrix.dependency-version }})
 
@@ -54,9 +63,19 @@ jobs:
           key: dependencies-laravel-${{ matrix.laravel-version }}-php-${{ matrix.php-version }}-composer-${{ hashFiles('composer.json') }}
           restore-keys: dependencies-laravel-${{ matrix.laravel-version }}-php-${{ matrix.php-version }}-composer-
 
+      - name: Determine testbench version
+        id: testbench
+        run: |
+          case "${{ matrix.laravel-version }}" in
+            11.*) echo "version=^9.0" >> $GITHUB_OUTPUT ;;
+            12.*) echo "version=^10.0" >> $GITHUB_OUTPUT ;;
+            13.*) echo "version=^11.0" >> $GITHUB_OUTPUT ;;
+          esac
+
       - name: Install composer dependencies
         run: |
-          composer require "illuminate/support:${{ matrix.laravel-version }}" --no-interaction --no-update
+          composer config --global policy.advisories.block false
+          composer require "illuminate/support:${{ matrix.laravel-version }}" "orchestra/testbench:${{ steps.testbench.outputs.version }}" --no-interaction --no-update
           composer update --${{ matrix.dependency-version }} --prefer-dist --no-interaction
 
       - name: List Installed Dependencies

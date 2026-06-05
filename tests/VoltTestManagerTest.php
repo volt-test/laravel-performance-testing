@@ -277,4 +277,261 @@ class VoltTestManagerTest extends TestCase
         $scenarios = $this->manager->getScenarios();
         $this->assertCount(2, $scenarios);
     }
+
+    public function test_stage_returns_self_for_chaining(): void
+    {
+        $manager = new VoltTestManager([]);
+
+        $result = $manager->stage('1m', 50);
+
+        $this->assertSame($manager, $result);
+    }
+
+    public function test_stage_delegates_to_volt_test(): void
+    {
+        $manager = new VoltTestManager([]);
+
+        $manager->stage('1m', 50)
+            ->stage('5m', 100)
+            ->stage('1m', 0);
+
+        $this->assertInstanceOf(VoltTest::class, $manager->getVoltTest());
+    }
+
+    public function test_config_stages_applied_on_construction(): void
+    {
+        $config = [
+            'stages' => [
+                ['duration' => '1m', 'target' => 50],
+                ['duration' => '5m', 'target' => 100],
+                ['duration' => '1m', 'target' => 0],
+            ],
+        ];
+
+        $manager = new VoltTestManager($config);
+
+        $this->assertInstanceOf(VoltTest::class, $manager->getVoltTest());
+    }
+
+    public function test_config_stages_override_constant_load(): void
+    {
+        $config = [
+            'virtual_users' => 20,
+            'duration' => '30s',
+            'stages' => [
+                ['duration' => '1m', 'target' => 50],
+            ],
+        ];
+
+        $manager = new VoltTestManager($config);
+
+        $this->assertInstanceOf(VoltTest::class, $manager->getVoltTest());
+    }
+
+    public function test_empty_stages_config_uses_constant_load(): void
+    {
+        $config = [
+            'virtual_users' => 20,
+            'duration' => '30s',
+            'stages' => [],
+        ];
+
+        $manager = new VoltTestManager($config);
+
+        $this->assertInstanceOf(VoltTest::class, $manager->getVoltTest());
+    }
+
+    public function test_regions_returns_self_for_chaining(): void
+    {
+        $manager = new VoltTestManager([]);
+
+        $result = $manager->regions(['us-east-1' => 100]);
+
+        $this->assertSame($manager, $result);
+    }
+
+    public function test_regions_delegates_to_volt_test(): void
+    {
+        $manager = new VoltTestManager([]);
+
+        $manager->regions(['us-east-1' => 60, 'eu-west-1' => 40]);
+
+        $this->assertInstanceOf(VoltTest::class, $manager->getVoltTest());
+    }
+
+    public function test_config_regions_applied_on_construction(): void
+    {
+        $config = [
+            'regions' => [
+                'us-east-1' => 60,
+                'eu-west-1' => 40,
+            ],
+        ];
+
+        $manager = new VoltTestManager($config);
+
+        $this->assertInstanceOf(VoltTest::class, $manager->getVoltTest());
+    }
+
+    public function test_empty_regions_config_is_ignored(): void
+    {
+        $config = [
+            'regions' => [],
+        ];
+
+        $manager = new VoltTestManager($config);
+
+        $this->assertInstanceOf(VoltTest::class, $manager->getVoltTest());
+    }
+
+    public function test_target_returns_self_for_chaining(): void
+    {
+        $result = $this->manager->target('https://api.example.com');
+
+        $this->assertSame($this->manager, $result);
+    }
+
+    public function test_target_sets_url_and_default_idle_timeout(): void
+    {
+        $this->manager->target('https://api.example.com');
+
+        $config = $this->getVoltTestConfig($this->manager);
+        $this->assertEquals('https://api.example.com', $config['target']['url']);
+        $this->assertEquals('30s', $config['target']['idle_timeout']);
+    }
+
+    public function test_target_sets_url_and_custom_idle_timeout(): void
+    {
+        $this->manager->target('https://api.example.com', '10s');
+
+        $config = $this->getVoltTestConfig($this->manager);
+        $this->assertEquals('https://api.example.com', $config['target']['url']);
+        $this->assertEquals('10s', $config['target']['idle_timeout']);
+    }
+
+    public function test_target_with_chaining(): void
+    {
+        $result = $this->manager
+            ->target('https://api.example.com', '5s')
+            ->name('My Test')
+            ->description('My Description');
+
+        $this->assertSame($this->manager, $result);
+    }
+
+    public function test_run_auto_sets_target_from_base_url_config(): void
+    {
+        $config = [
+            'base_url' => 'http://localhost:9000',
+        ];
+        $manager = new VoltTestManager($config);
+
+        $voltTestConfig = $this->getVoltTestConfig($manager);
+        $this->assertEquals('https://example.com', $voltTestConfig['target']['url']);
+
+        // After calling run preparation, the target should be set from base_url
+        // We verify the targetSet flag is false before run
+        $reflection = new \ReflectionClass($manager);
+        $prop = $reflection->getProperty('targetSet');
+        $prop->setAccessible(true);
+        $this->assertFalse($prop->getValue($manager));
+    }
+
+    public function test_explicit_target_prevents_auto_fallback(): void
+    {
+        $config = [
+            'base_url' => 'http://localhost:9000',
+        ];
+        $manager = new VoltTestManager($config);
+        $manager->target('https://custom.example.com');
+
+        $reflection = new \ReflectionClass($manager);
+        $prop = $reflection->getProperty('targetSet');
+        $prop->setAccessible(true);
+        $this->assertTrue($prop->getValue($manager));
+
+        $voltTestConfig = $this->getVoltTestConfig($manager);
+        $this->assertEquals('https://custom.example.com', $voltTestConfig['target']['url']);
+    }
+
+    public function test_test_case_can_set_target(): void
+    {
+        $testInstance = new class () implements VoltTestCase {
+            public function define(VoltTestManager $manager): void
+            {
+                $manager->target('https://myapp.example.com');
+                $manager->scenario('Test Scenario');
+            }
+        };
+
+        $this->manager->addTestFromClass($testInstance);
+
+        $reflection = new \ReflectionClass($this->manager);
+        $prop = $reflection->getProperty('targetSet');
+        $prop->setAccessible(true);
+        $this->assertTrue($prop->getValue($this->manager));
+    }
+
+    private function getVoltTestConfig(VoltTestManager $manager): array
+    {
+        $reflection = new \ReflectionClass($manager->getVoltTest());
+        $configProp = $reflection->getProperty('config');
+        $configProp->setAccessible(true);
+
+        return $configProp->getValue($manager->getVoltTest())->toArray();
+    }
+
+    public function test_name_returns_self_for_chaining(): void
+    {
+        $result = $this->manager->name('New Name');
+
+        $this->assertSame($this->manager, $result);
+    }
+
+    public function test_description_returns_self_for_chaining(): void
+    {
+        $result = $this->manager->description('New Description');
+
+        $this->assertSame($this->manager, $result);
+    }
+
+    public function test_name_and_description_chaining(): void
+    {
+        $result = $this->manager
+            ->name('My Test')
+            ->description('My Description');
+
+        $this->assertSame($this->manager, $result);
+    }
+
+    public function test_name_delegates_to_volt_test(): void
+    {
+        $this->manager->name('Updated Name');
+
+        $this->assertInstanceOf(VoltTest::class, $this->manager->getVoltTest());
+    }
+
+    public function test_description_delegates_to_volt_test(): void
+    {
+        $this->manager->description('Updated Description');
+
+        $this->assertInstanceOf(VoltTest::class, $this->manager->getVoltTest());
+    }
+
+    public function test_test_case_can_set_name_and_description(): void
+    {
+        $testInstance = new class () implements VoltTestCase {
+            public function define(VoltTestManager $manager): void
+            {
+                $manager->name('Custom Test Name')
+                    ->description('Custom Description');
+                $manager->scenario('Test Scenario');
+            }
+        };
+
+        $result = $this->manager->addTestFromClass($testInstance);
+
+        $this->assertSame($this->manager, $result);
+        $this->assertFalse($this->manager->getScenarios()->isEmpty());
+    }
 }

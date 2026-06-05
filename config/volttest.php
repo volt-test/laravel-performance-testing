@@ -34,6 +34,42 @@ return [
 
     /*
     |--------------------------------------------------------------------------
+    | Stages Configuration
+    |--------------------------------------------------------------------------
+    |
+    | Define stages for ramped load profiles. Each stage linearly ramps
+    | from the previous target to the new target over the given duration.
+    | When stages are set, virtual_users/duration/ramp_up are ignored.
+    |
+    | Example:
+    |   'stages' => [
+    |       ['duration' => '1m', 'target' => 50],
+    |       ['duration' => '5m', 'target' => 100],
+    |       ['duration' => '1m', 'target' => 0],
+    |   ],
+    |
+    */
+    'stages' => [],
+
+    /*
+    |--------------------------------------------------------------------------
+    | Region Distribution
+    |--------------------------------------------------------------------------
+    |
+    | Configure region distribution for cloud execution.
+    | Weights must sum to 100. Leave empty for single-region default.
+    |
+    | Example:
+    |   'regions' => [
+    |       'us-east-1' => 60,
+    |       'eu-west-1' => 40,
+    |   ],
+    |
+    */
+    'regions' => [],
+
+    /*
+    |--------------------------------------------------------------------------
     | Debug Configuration
     |--------------------------------------------------------------------------
     */
@@ -89,5 +125,19 @@ return [
         'validate_files' => true,                // Check file exists before run
         'default_distribution' => 'unique',      // Default distribution mode
         'default_headers' => true,               // Default header setting
+    ],
+
+    /*
+    |--------------------------------------------------------------------------
+    | Cloud Configuration
+    |--------------------------------------------------------------------------
+    |
+    | Configure cloud execution for running tests on VoltTest Cloud.
+    | Set VOLTTEST_API_KEY in your .env file to enable cloud execution.
+    |
+    */
+    'cloud' => [
+        'enabled' => env('VOLTTEST_CLOUD_ENABLED', false),
+        'api_key' => env('VOLTTEST_API_KEY'),
     ],
 ];

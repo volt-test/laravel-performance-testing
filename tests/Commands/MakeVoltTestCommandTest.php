@@ -199,6 +199,56 @@ class MakeVoltTestCommandTest extends TestCase
         $this->assertTrue($definition->hasOption('auth'));
     }
 
+    public function test_generated_test_includes_target_from_config(): void
+    {
+        $this->app['config']->set('volttest.base_url', 'https://myapp.example.com');
+
+        $this->mockStubFile();
+
+        File::shouldReceive('exists')
+            ->with('/tmp/volt-tests')
+            ->andReturn(true);
+
+        File::shouldReceive('exists')
+            ->with('/tmp/volt-tests/TargetTest.php')
+            ->andReturn(false);
+
+        File::shouldReceive('put')
+            ->once()
+            ->withArgs(function ($path, $content) {
+                return $path === '/tmp/volt-tests/TargetTest.php' &&
+                    str_contains($content, "->target('https://myapp.example.com')");
+            });
+
+        $this->artisan('volttest:make', ['name' => 'Target'])
+            ->assertExitCode(0);
+    }
+
+    public function test_generated_test_uses_default_target_when_config_not_set(): void
+    {
+        $this->app['config']->set('volttest.base_url', null);
+
+        $this->mockStubFile();
+
+        File::shouldReceive('exists')
+            ->with('/tmp/volt-tests')
+            ->andReturn(true);
+
+        File::shouldReceive('exists')
+            ->with('/tmp/volt-tests/DefaultTest.php')
+            ->andReturn(false);
+
+        File::shouldReceive('put')
+            ->once()
+            ->withArgs(function ($path, $content) {
+                return $path === '/tmp/volt-tests/DefaultTest.php' &&
+                    str_contains($content, "->target('http://localhost:8000')");
+            });
+
+        $this->artisan('volttest:make', ['name' => 'Default'])
+            ->assertExitCode(0);
+    }
+
     public function test_it_creates_test_with_routes_discovery_and_filter_api(): void
     {
         // Set up some routes for discovery

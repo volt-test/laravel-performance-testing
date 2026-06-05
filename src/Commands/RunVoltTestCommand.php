@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace VoltTest\Laravel\Commands;
 
 use Illuminate\Console\Command;
+use VoltTest\CloudRun;
 use VoltTest\Laravel\Facades\VoltTest;
 use VoltTest\Laravel\Services\ReportGenerator;
 use VoltTest\Laravel\Services\TestClassDiscoverer;
@@ -22,7 +23,7 @@ class RunVoltTestCommand extends Command
                             {test? : The test class to run OR URL to test}
                             {--path= : Path to search for test classes}
                             {--debug : Enable HTTP debugging}
-                            {--users=10 : Number of virtual users}
+                            {--users= : Number of virtual users (default: 10 when no stages are defined)}
                             {--duration= : (Optional) Test duration}
                             {--stream : Stream test output to console}
                             {--url : Treat the test argument as a URL for direct load testing}
@@ -31,7 +32,11 @@ class RunVoltTestCommand extends Command
                             {--body= : Request body for URL testing (for POST/PUT)}
                             {--content-type= : Content type for URL testing}
                             {--code-status=200 : Expected HTTP status code for URL testing}
-                            {--scenario-name= : Custom scenario name for URL testing}';
+                            {--scenario-name= : Custom scenario name for URL testing}
+                            {--cloud : Run test on VoltTest Cloud}
+                            {--stage=* : Load stages as duration:target (e.g. --stage=1m:50 --stage=5m:100 --stage=1m:0)}
+                            {--region=* : Region distribution as region:weight (e.g. --region=us-east-1:60 --region=eu-west-1:40)}
+                            {--target= : Target base URL (overrides config base_url)}';
 
     /**
      * The console command description.
@@ -58,7 +63,15 @@ class RunVoltTestCommand extends Command
         try {
             $this->configureVoltTest();
             $this->setupTests();
+            $this->applyDefaultLoadProfile();
             $result = $this->executeTests();
+
+            if ($result === null) {
+                $this->info('Test run cancelled.');
+
+                return;
+            }
+
             $this->handleResults($result);
 
             $this->info('Test completed successfully.');
@@ -76,24 +89,146 @@ class RunVoltTestCommand extends Command
     {
         $voltTest = VoltTest::getVoltTest();
 
-        $users = $this->option('users');
-        if (is_string($users)) {
-            $this->validator->validateVirtualUsers($users);
-            $voltTest->setVirtualUsers((int) $users);
-            $this->info("Set virtual users: {$users}");
-        }
+        $stages = $this->option('stage');
+        if (is_array($stages) && count($stages) > 0) {
+            VoltTest::resetLoadProfile();
+            $voltTest = VoltTest::getVoltTest();
+            foreach ($stages as $stageStr) {
+                [$duration, $target] = $this->parseStageOption($stageStr);
+                $voltTest->stage($duration, $target);
+            }
+            $this->info('Configured ' . count($stages) . ' stage(s)');
+        } else {
+            $users = $this->option('users');
+            if ($users !== '' && is_string($users)) {
+                $this->validator->validateVirtualUsers($users);
+                $voltTest->setVirtualUsers((int) $users);
+                $this->info("Set virtual users: {$users}");
+            }
 
-        $duration = $this->option('duration');
-        if ($duration && is_string($duration)) {
-            $this->validator->validateDuration($duration);
-            $voltTest->setDuration($duration);
-            $this->info("Set test duration: {$duration}");
+            $duration = $this->option('duration');
+            if ($duration && is_string($duration)) {
+                $this->validator->validateDuration($duration);
+                $voltTest->setDuration($duration);
+                $this->info("Set test duration: {$duration}");
+            }
         }
 
         if ($this->option('debug')) {
             $voltTest->setHttpDebug(true);
             $this->info('HTTP debugging enabled');
         }
+
+        if ($this->option('cloud') || config('volttest.cloud.enabled', false)) {
+            VoltTest::cloud();
+            $this->info('Cloud execution mode enabled.');
+
+            VoltTest::setOnConflictPrompt(function (array $existingTests) {
+                if (! $this->input->isInteractive() || empty($existingTests)) {
+                    return $existingTests[0]['id'] ?? null;
+                }
+
+                $count = count($existingTests);
+                $name = $existingTests[0]['name'] ?? 'Unknown';
+                $this->warn("{$count} test(s) named '{$name}' already exist:");
+
+                $options = [];
+                foreach ($existingTests as $test) {
+                    $id = substr($test['id'] ?? '', 0, 8);
+                    $url = $test['target_url'] ?? 'N/A';
+                    $vus = $test['virtual_users'] ?? '?';
+                    $updated = $test['updated_at'] ?? '';
+                    $options[] = "Update {$id}...  Target: {$url}  VUs: {$vus}  Updated: {$updated}";
+                }
+                $options[] = 'Create new test';
+                $options[] = 'Cancel';
+
+                $choice = $this->choice('What would you like to do?', $options, 0);
+
+                if ($choice === 'Cancel') {
+                    return 'cancel';
+                }
+
+                if ($choice === 'Create new test') {
+                    return null;
+                }
+
+                $index = array_search($choice, $options, true);
+
+                return $existingTests[$index]['id'] ?? null;
+            });
+        }
+
+        $target = $this->option('target');
+        if ($target && is_string($target)) {
+            VoltTest::target($target);
+            $this->info("Set target: {$target}");
+        }
+
+        $regions = $this->option('region');
+        if (is_array($regions) && count($regions) > 0) {
+            $regionConfig = [];
+            foreach ($regions as $regionStr) {
+                [$region, $weight] = $this->parseRegionOption($regionStr);
+                $regionConfig[$region] = $weight;
+            }
+            $voltTest->regions($regionConfig);
+            $this->info('Configured ' . count($regions) . ' region(s)');
+        }
+    }
+
+    /**
+     * Apply default load profile after test setup.
+     * Sets 10 virtual users if no stages were defined (by CLI, config, or test class)
+     * and no explicit --users was provided.
+     */
+    protected function applyDefaultLoadProfile(): void
+    {
+        $voltTest = VoltTest::getVoltTest();
+        $stages = $this->option('stage');
+        $users = $this->option('users');
+
+        $hasCliStages = is_array($stages) && count($stages) > 0;
+        $hasExplicitUsers = $users !== null && $users !== '';
+
+        if (! $hasCliStages && ! $hasExplicitUsers && ! $voltTest->hasStages()) {
+            $voltTest->setVirtualUsers(10);
+            $this->info('Set virtual users: 10 (default)');
+        }
+    }
+
+    /**
+     * Parse a stage option string (e.g. "1m:50") into duration and target.
+     *
+     * @return array{0: string, 1: int}
+     */
+    protected function parseStageOption(string $stage): array
+    {
+        $parts = explode(':', $stage);
+        if (count($parts) !== 2) {
+            throw new \InvalidArgumentException(
+                "Invalid stage format '{$stage}'. Use duration:target (e.g. 1m:50)"
+            );
+        }
+
+        return [$parts[0], (int) $parts[1]];
+    }
+
+    /**
+     * Parse a region option string (e.g. "us-east-1:60") into region and weight.
+     *
+     * @return array{0: string, 1: int}
+     */
+    protected function parseRegionOption(string $region): array
+    {
+        $parts = explode(':', $region, 2);
+        if (count($parts) !== 2) {
+            throw new \InvalidArgumentException(
+                "Invalid region format '{$region}'. Use region:weight (e.g. us-east-1:60)"
+            );
+        }
+
+        return [$parts[0], (int) $parts[1]];
     }
 
     /**
@@ -180,8 +315,16 @@ class RunVoltTestCommand extends Command
     /**
      * Handle test results.
      */
-    protected function handleResults(TestResult $result): void
+    protected function handleResults(TestResult|CloudRun|null $result): void
     {
+        if ($result instanceof CloudRun) {
+            return;
+        }
+
+        if (! $result instanceof TestResult) {
+            return;
+        }
+
         if (! $this->option('stream')) {
             $this->reportGenerator->displaySummary($result, $this);
         }
