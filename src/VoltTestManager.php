@@ -270,6 +270,7 @@ class VoltTestManager
     {
         $this->voltTest->target($url, $idleTimeout);
         $this->targetSet = true;
+        config(['volttest.base_url' => $url]);
 
         return $this;
     }

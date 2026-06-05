@@ -472,6 +472,55 @@ class VoltTestManagerTest extends TestCase
         $this->assertTrue($prop->getValue($this->manager));
     }
 
+    public function test_target_updates_laravel_base_url_config(): void
+    {
+        $this->assertEquals('http://localhost:8000', config('volttest.base_url'));
+
+        $this->manager->target('https://httpbin.org');
+
+        $this->assertEquals('https://httpbin.org', config('volttest.base_url'));
+    }
+
+    public function test_target_updates_base_url_so_scenarios_use_correct_host(): void
+    {
+        $this->manager->target('https://httpbin.org');
+
+        $scenario = $this->manager->scenario('Test');
+        $scenario->step('Get Home')->get('/get?page=home')->expectStatus(200);
+
+        $scenarios = $this->manager->getScenarios();
+        $scenarioArray = $scenarios->first()->getScenario()->toArray();
+        $stepUrl = $scenarioArray['steps'][0]['request']['url'];
+
+        $this->assertEquals('https://httpbin.org/get?page=home', $stepUrl);
+    }
+
+    public function test_relative_paths_use_default_base_url_without_target(): void
+    {
+        $scenario = $this->manager->scenario('Test');
+        $scenario->step('Get Home')->get('/api/health')->expectStatus(200);
+
+        $scenarios = $this->manager->getScenarios();
+        $scenarioArray = $scenarios->first()->getScenario()->toArray();
+        $stepUrl = $scenarioArray['steps'][0]['request']['url'];
+
+        $this->assertEquals('http://localhost:8000/api/health', $stepUrl);
+    }
+
+    public function test_target_does_not_affect_absolute_urls_in_steps(): void
+    {
+        $this->manager->target('https://httpbin.org');
+
+        $scenario = $this->manager->scenario('Test');
+        $scenario->step('External')->get('https://other-api.com/health')->expectStatus(200);
+
+        $scenarios = $this->manager->getScenarios();
+        $scenarioArray = $scenarios->first()->getScenario()->toArray();
+        $stepUrl = $scenarioArray['steps'][0]['request']['url'];
+
+        $this->assertEquals('https://other-api.com/health', $stepUrl);
+    }
+
     private function getVoltTestConfig(VoltTestManager $manager): array
     {
         $reflection = new \ReflectionClass($manager->getVoltTest());
