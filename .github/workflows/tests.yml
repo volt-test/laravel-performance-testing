@@ -78,6 +78,7 @@ jobs:
 
       - name: Install composer dependencies
         run: |
+          composer config --global policy.advisories.block false
           composer require "illuminate/support:${{ matrix.laravel-version }}" "orchestra/testbench:${{ steps.testbench.outputs.version }}" --no-interaction --no-update
           composer update --${{ matrix.dependency-version }} --prefer-dist --no-interaction
 
