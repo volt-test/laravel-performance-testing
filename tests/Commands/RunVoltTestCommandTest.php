@@ -6,6 +6,7 @@ namespace VoltTest\Laravel\Tests\Commands;
 
 use Mockery;
 use Orchestra\Testbench\TestCase;
+use VoltTest\Exceptions\ErrorHandler;
 use VoltTest\Laravel\Commands\RunVoltTestCommand;
 use VoltTest\Laravel\Contracts\VoltTestCase;
 use VoltTest\Laravel\Services\ReportGenerator;
@@ -56,6 +57,7 @@ class RunVoltTestCommandTest extends TestCase
 
     protected function tearDown(): void
     {
+        ErrorHandler::unregister();
         Mockery::close();
         parent::tearDown();
     }
@@ -102,11 +104,6 @@ class RunVoltTestCommandTest extends TestCase
     public function test_configures_duration_when_option_provided(): void
     {
         $this->mockValidator
-            ->shouldReceive('validateVirtualUsers')
-            ->with('10')
-            ->once();
-
-        $this->mockValidator
             ->shouldReceive('validateDuration')
             ->with('60s')
             ->once();
@@ -131,11 +128,6 @@ class RunVoltTestCommandTest extends TestCase
 
     public function test_enables_debug_mode_when_option_provided(): void
     {
-        $this->mockValidator
-            ->shouldReceive('validateVirtualUsers')
-            ->with('10')
-            ->once();
-
         $this->mockTestDiscoverer
             ->shouldReceive('findTestClasses')
             ->andReturn(['App\\VoltTests\\UserTest']);
@@ -153,11 +145,6 @@ class RunVoltTestCommandTest extends TestCase
 
     public function test_runs_url_test_when_url_option_provided(): void
     {
-        $this->mockValidator
-            ->shouldReceive('validateVirtualUsers')
-            ->with('10')
-            ->once();
-
         $url = 'https://example.com';
         $mockTestClass = Mockery::mock(VoltTestCase::class);
 
@@ -196,11 +183,6 @@ class RunVoltTestCommandTest extends TestCase
 
     public function test_runs_specific_test_class_when_provided(): void
     {
-        $this->mockValidator
-            ->shouldReceive('validateVirtualUsers')
-            ->with('10')
-            ->once();
-
         $testClass = 'UserTest';
 
         $this->mockUrlTestCreator
@@ -232,11 +214,6 @@ class RunVoltTestCommandTest extends TestCase
 
     public function test_discovers_all_test_classes_when_no_specific_test_provided(): void
     {
-        $this->mockValidator
-            ->shouldReceive('validateVirtualUsers')
-            ->with('10')
-            ->once();
-
         $testClasses = [
             'App\\VoltTests\\UserTest',
             'App\\VoltTests\\OrderTest',
@@ -280,11 +257,6 @@ class RunVoltTestCommandTest extends TestCase
 
     public function test_uses_custom_path_when_provided(): void
     {
-        $this->mockValidator
-            ->shouldReceive('validateVirtualUsers')
-            ->with('10')
-            ->once();
-
         $customPath = 'app/customTests/path';
 
         $this->mockValidator
@@ -362,13 +334,6 @@ class RunVoltTestCommandTest extends TestCase
     {
         $url = 'https://example.com';
 
-        $this->mockValidator
-            ->shouldReceive('validateVirtualUsers')
-            ->with('10')
-            ->once();
-
-
-
         $this->mockValidator->shouldIgnoreMissing();
 
         $this->mockUrlTestCreator
@@ -396,6 +361,129 @@ class RunVoltTestCommandTest extends TestCase
             '--url' => true,
             '--headers' => 'invalid json',
         ])->assertExitCode(0);
+    }
+
+    public function test_configures_stages_when_option_provided(): void
+    {
+        $this->mockTestDiscoverer
+            ->shouldReceive('findTestClasses')
+            ->with(null)
+            ->andReturn(['App\\VoltTests\\UserTest']);
+
+        $this->mockTestRunner
+            ->shouldReceive('run')
+            ->with(false)
+            ->andReturn($this->createMockResult());
+
+        $this->mockReportGenerator->shouldIgnoreMissing();
+
+        $this->artisan('volttest:run', ['--stage' => ['1m:50', '5m:100', '1m:0']])
+            ->expectsOutput('Configured 3 stage(s)')
+            ->assertExitCode(0);
+    }
+
+    public function test_stages_skip_virtual_users_and_duration(): void
+    {
+        $this->mockTestDiscoverer
+            ->shouldReceive('findTestClasses')
+            ->with(null)
+            ->andReturn(['App\\VoltTests\\UserTest']);
+
+        $this->mockTestRunner
+            ->shouldReceive('run')
+            ->with(false)
+            ->andReturn($this->createMockResult());
+
+        $this->mockReportGenerator->shouldIgnoreMissing();
+
+        $this->artisan('volttest:run', [
+            '--stage' => ['1m:50'],
+            '--users' => '20',
+            '--duration' => '30s',
+        ])
+            ->expectsOutput('Configured 1 stage(s)')
+            ->doesntExpectOutput('Set virtual users: 20')
+            ->doesntExpectOutput('Set test duration: 30s')
+            ->assertExitCode(0);
+    }
+
+    public function test_invalid_stage_format_shows_error(): void
+    {
+        $this->artisan('volttest:run', ['--stage' => ['invalid']])
+            ->expectsOutputToContain('Invalid stage format')
+            ->assertExitCode(0);
+    }
+
+    public function test_configures_regions_when_option_provided(): void
+    {
+        $this->mockTestDiscoverer
+            ->shouldReceive('findTestClasses')
+            ->with(null)
+            ->andReturn(['App\\VoltTests\\UserTest']);
+
+        $this->mockTestRunner
+            ->shouldReceive('run')
+            ->with(false)
+            ->andReturn($this->createMockResult());
+
+        $this->mockReportGenerator->shouldIgnoreMissing();
+
+        $this->artisan('volttest:run', ['--region' => ['us-east-1:60', 'eu-west-1:40']])
+            ->expectsOutput('Configured 2 region(s)')
+            ->assertExitCode(0);
+    }
+
+    public function test_configures_single_region_when_option_provided(): void
+    {
+        $this->mockTestDiscoverer
+            ->shouldReceive('findTestClasses')
+            ->with(null)
+            ->andReturn(['App\\VoltTests\\UserTest']);
+
+        $this->mockTestRunner
+            ->shouldReceive('run')
+            ->with(false)
+            ->andReturn($this->createMockResult());
+
+        $this->mockReportGenerator->shouldIgnoreMissing();
+
+        $this->artisan('volttest:run', ['--region' => ['us-east-1:100']])
+            ->expectsOutput('Configured 1 region(s)')
+            ->assertExitCode(0);
+    }
+
+    public function test_invalid_region_format_shows_error(): void
+    {
+        $this->artisan('volttest:run', ['--region' => ['invalid']])
+            ->expectsOutputToContain('Invalid region format')
+            ->assertExitCode(0);
+    }
+
+    public function test_configures_target_when_option_provided(): void
+    {
+        $this->mockTestDiscoverer
+            ->shouldReceive('findTestClasses')
+            ->with(null)
+            ->andReturn(['App\\VoltTests\\UserTest']);
+
+        $this->mockTestRunner
+            ->shouldReceive('run')
+            ->with(false)
+            ->andReturn($this->createMockResult());
+
+        $this->mockReportGenerator->shouldIgnoreMissing();
+
+        $this->artisan('volttest:run', ['--target' => 'https://api.example.com'])
+            ->expectsOutput('Set target: https://api.example.com')
+            ->assertExitCode(0);
+    }
+
+    public function test_command_has_target_option_in_signature(): void
+    {
+        $command = $this->app->make(RunVoltTestCommand::class);
+        $definition = $command->getDefinition();
+
+        $this->assertTrue($definition->hasOption('target'));
     }
 
     protected function createMockResult()

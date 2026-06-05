@@ -23,7 +23,9 @@ For more information about the core VoltTest functionality, visit **[php.volt-te
 - [Reports](#reports)
 - [CSV Data Sources](#csv-data-sources)
 - [PHPUnit Integration](#phpunit-integration)
-- [Advanced Configuration](#advanced-configuration)
+- [Stages (Ramped Load Profiles)](#stages-ramped-load-profiles)
+- [Cloud Execution](#cloud-execution)
+- [Region Distribution](#region-distribution)
 - [Testing Tips](#testing-tips)
 - [Troubleshooting](#troubleshooting)
 - [Learn More](#learn-more)
@@ -81,10 +83,23 @@ return [
     'name' => env('VOLTTEST_NAME', 'Laravel Application Test'),
     'description' => env('VOLTTEST_DESCRIPTION', 'Performance test for Laravel application'),
 
-    // Load Configuration
+    // Load Configuration (constant load)
     'virtual_users' => env('VOLTTEST_VIRTUAL_USERS', 10),
     'duration' => env('VOLTTEST_DURATION'), // e.g., '1m', '30s', '2h'
     'ramp_up' => env('VOLTTEST_RAMP_UP', null),
+
+    // Stages (ramped load profile — overrides virtual_users/duration/ramp_up)
+    'stages' => [
+        // ['duration' => '1m', 'target' => 50],
+        // ['duration' => '5m', 'target' => 100],
+        // ['duration' => '1m', 'target' => 0],
+    ],
+
+    // Region Distribution (weights must sum to 100)
+    'regions' => [
+        // 'us-east-1' => 60,
+        // 'eu-west-1' => 40,
+    ],
 
     // Debug Configuration
     'http_debug' => env('VOLTTEST_HTTP_DEBUG', false),
@@ -134,6 +149,9 @@ class UserTest implements VoltTestCase
 {
     public function define(VoltTestManager $manager): void
     {
+        // Set the target URL
+        $manager->target('http://localhost:8000');
+
         $scenario = $manager->scenario('UserTest');
 
         // Step 1: Home Page
@@ -233,6 +251,8 @@ class CheckoutTest implements VoltTestCase
 {
     public function define(VoltTestManager $manager): void
     {
+        $manager->target('http://localhost:8000');
+
         $scenario = $manager->scenario('E-commerce Checkout Flow');
 
         // Browse products
@@ -287,6 +307,8 @@ class ApiTest implements VoltTestCase
 {
     public function define(VoltTestManager $manager): void
     {
+        $manager->target('http://localhost:8000');
+
         $scenario = $manager->scenario('API Performance Test');
 
         // Login to get token - Using headers directly in the request method
@@ -424,6 +446,10 @@ php artisan volttest:run [test] [options]
 |`--content-type=`|Content type for URL testing|`--content-type=application/json`|
 |`--code-status=`|Expected HTTP status code for URL testing (default: 200)|`--code-status=201`|
 |`--scenario-name=`|Custom scenario name for URL testing|`--scenario-name="API Load Test"`|
+|`--target=`|Target base URL (overrides config base_url)|`--target=https://api.example.com`|
+|`--cloud`|Run test on VoltTest Cloud|`--cloud`|
+|`--stage=*`|Load stages as duration:target (repeatable)|`--stage=1m:50 --stage=5m:100`|
+|`--region=*`|Region distribution as region:weight (repeatable)|`--region=us-east-1:60 --region=eu-west-1:40`|
 
 ### Basic Execution
 
@@ -581,6 +607,8 @@ class RegisterTest implements VoltTestCase
 {
     public function define(VoltTestManager $manager): void
     {
+        $manager->target('http://localhost:8000');
+
         // Configure CSV data source
         $scenario = $manager->scenario('RegisterTest')
             ->dataSource('users.csv');
@@ -668,6 +696,8 @@ class HomePagePerformanceTest extends PerformanceTestCase
         $testClass = new class implements VoltTestCase {
             public function define(VoltTestManager $manager): void
             {
+                $manager->target('http://localhost:8000');
+
                 $scenario = $manager->scenario('Homepage Load Test');
 
                 $scenario->step('Load Homepage')
@@ -749,6 +779,8 @@ class RegistrationTest implements VoltTestCase
 {
     public function define(VoltTestManager $manager): void
     {
+        $manager->target('http://localhost:8000');
+
         $scenario = $manager->scenario('RegistrationTest')
             ->dataSource('registration_users.csv', 'sequential');
 
@@ -823,6 +855,248 @@ For detailed information including:
 
 **[Read the complete PHPUnit Integration guide →](docs/PHPUNIT_INTEGRATION.md)**
 
+
+## Stages (Ramped Load Profiles)
+
+Stages let you define a multi-phase load profile where virtual users ramp up and down over time. Each stage linearly transitions from the previous target to the new target over the given duration.
+
+When stages are used, `virtual_users`, `duration`, and `ramp_up` are ignored.
+
+### Via Config
+
+Define stages in `config/volttest.php`:
+
+```php
+'stages' => [
+    ['duration' => '1m', 'target' => 50],   // Ramp up to 50 VUs over 1 minute
+    ['duration' => '5m', 'target' => 100],  // Ramp up to 100 VUs over 5 minutes
+    ['duration' => '2m', 'target' => 100],  // Hold at 100 VUs for 2 minutes
+    ['duration' => '1m', 'target' => 0],    // Ramp down to 0 over 1 minute
+],
+```
+
+### Via Artisan Command
+
+Use the `--stage` option (repeatable):
+
+```bash
+php artisan volttest:run UserTest \
+    --stage=1m:50 \
+    --stage=5m:100 \
+    --stage=2m:100 \
+    --stage=1m:0
+```
+
+When `--stage` is provided, `--users` and `--duration` are ignored.
+
+### Via Facade
+
+Use the `stage()` method programmatically:
+
+```php
+use VoltTest\Laravel\Facades\VoltTest;
+
+VoltTest::stage('1m', 50)
+    ->stage('5m', 100)
+    ->stage('1m', 0);
+```
+
+### In Test Classes
+
+Call `stage()` on the manager inside your test definition:
+
+```php
+class SpikeTest implements VoltTestCase
+{
+    public function define(VoltTestManager $manager): void
+    {
+        $manager->target('http://localhost:8000');
+
+        $manager->stage('30s', 200)  // Spike to 200 VUs
+            ->stage('1m', 200)       // Hold
+            ->stage('30s', 0);       // Drop
+
+        $scenario = $manager->scenario('Spike Test');
+        $scenario->step('Homepage')->get('/')->expectStatus(200);
+    }
+}
+```
+
+### In PHPUnit Tests
+
+Pass stages in the options array:
+
+```php
+$result = $this->runVoltTest($testClass, [
+    'stages' => [
+        ['duration' => '30s', 'target' => 50],
+        ['duration' => '2m', 'target' => 50],
+        ['duration' => '30s', 'target' => 0],
+    ],
+]);
+
+$this->assertVTSuccessful($result, 95.0);
+```
+
+### Common Patterns
+
+**Ramp-up test** — gradually increase load:
+```bash
+php artisan volttest:run --stage=2m:50 --stage=2m:100 --stage=2m:200
+```
+
+**Spike test** — sudden burst of traffic:
+```bash
+php artisan volttest:run --stage=10s:500 --stage=1m:500 --stage=10s:0
+```
+
+**Soak test** — sustained load over time:
+```bash
+php artisan volttest:run --stage=1m:100 --stage=30m:100 --stage=1m:0
+```
+
+## Cloud Execution
+
+Run your performance tests on VoltTest Cloud for higher concurrency and distributed load generation.
+
+### Setup
+
+1. Get your API key from [app.volt-test.com/settings](https://app.volt-test.com/settings)
+2. Add it to your `.env`:
+
+```env
+VOLTTEST_CLOUD_API_KEY=vt_your_api_key_here
+```
+
+Or enable cloud mode in `config/volttest.php`:
+
+```php
+'cloud' => [
+    'enabled' => true,
+    'api_key' => env('VOLTTEST_CLOUD_API_KEY'),
+],
+```
+
+### Running on Cloud
+
+```bash
+# Run a test on cloud
+php artisan volttest:run UserTest --cloud
+
+# Cloud with stages
+php artisan volttest:run UserTest --cloud --stage=1m:100 --stage=5m:500 --stage=1m:0
+```
+
+### Test Name Conflict Resolution
+
+When you run a cloud test, VoltTest checks if a test with the same name already exists in your organization. If it does, you'll be prompted to choose:
+
+```
+2 test(s) named 'UserTest' already exist:
+  [1] Update 3a8f1b2c...  Target: https://example.com  VUs: 100  Updated: 2026-05-08
+  [2] Update 9d4e5f6a...  Target: https://staging.example.com  VUs: 50  Updated: 2026-05-07
+  [3] Create new test
+  [4] Cancel
+> 
+```
+
+- **Update existing** — reuses the selected test and starts a new run against it
+- **Create new test** — creates a separate test entry even though the name matches
+- **Cancel** — aborts the test run without creating or updating anything
+
+In non-interactive environments (CI/CD, `--no-interaction`), VoltTest defaults to updating the most recent existing test.
+
+## Region Distribution
+
+Distribute load testing across multiple AWS regions simultaneously. Each region receives a percentage of the total virtual users based on the configured weights.
+
+### Via Config
+
+Define regions in `config/volttest.php`:
+
+```php
+'regions' => [
+    'us-east-1' => 60,   // 60% of VUs in US East
+    'eu-west-1' => 40,   // 40% of VUs in EU West
+],
+```
+
+### Via Artisan Command
+
+Use the `--region` option (repeatable):
+
+```bash
+php artisan volttest:run UserTest \
+    --region=us-east-1:60 \
+    --region=eu-west-1:40
+```
+
+Combined with cloud and stages:
+
+```bash
+php artisan volttest:run UserTest --cloud \
+    --stage=1m:50 --stage=5m:500 --stage=1m:0 \
+    --region=us-east-1:50 --region=eu-west-1:30 --region=ap-southeast-1:20
+```
+
+### Via Facade
+
+Use the `regions()` method programmatically:
+
+```php
+use VoltTest\Laravel\Facades\VoltTest;
+
+VoltTest::cloud()
+    ->regions([
+        'us-east-1' => 60,
+        'eu-west-1' => 40,
+    ])
+    ->stage('1m', 100)
+    ->stage('5m', 500)
+    ->stage('1m', 0);
+```
+
+### In Test Classes
+
+Call `regions()` on the manager inside your test definition:
+
+```php
+class GeoDistributedTest implements VoltTestCase
+{
+    public function define(VoltTestManager $manager): void
+    {
+        $manager->target('https://api.example.com');
+
+        $manager->regions([
+            'us-east-1' => 50,
+            'eu-west-1' => 30,
+            'ap-southeast-1' => 20,
+        ]);
+
+        $scenario = $manager->scenario('Multi-Region API Test');
+        $scenario->step('Health Check')
+            ->get('/api/health')
+            ->expectStatus(200);
+    }
+}
+```
+
+### Single Region
+
+For a single region, use a weight of 100:
+
+```bash
+php artisan volttest:run --region=eu-west-1:100
+```
+
+When no regions are configured, the test runs in the default region.
+
+### Validation Rules
+
+- Weights must sum to exactly 100
+- Each weight must be a positive integer (> 0)
+- Region codes must be non-empty strings (e.g., `us-east-1`, `eu-west-1`)
+- At least one region must be specified
 
 ## Testing Tips
 

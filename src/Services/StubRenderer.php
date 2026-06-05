@@ -27,6 +27,8 @@ class {{ class }} implements VoltTestCase
 {
     public function define(VoltTestManager $manager): void
     {
+        $manager->target('{{ target }}');
+
         $scenario = $manager->scenario('{{ class }}');
 
 {{ routes }}
@@ -50,10 +52,11 @@ EOF;
     public function render(string $name, array $routes): string
     {
         $stub = $this->getStub();
+        $target = config('volttest.base_url') ?: 'http://localhost:8000';
 
         return str_replace(
-            ['{{ class }}', '{{ namespace }}', '{{ rootNamespace }}', '{{ routes }}'],
-            [$name, 'App\\VoltTests', 'App\\', $this->generator->generate($routes)],
+            ['{{ class }}', '{{ namespace }}', '{{ rootNamespace }}', '{{ routes }}', '{{ target }}'],
+            [$name, 'App\\VoltTests', 'App\\', $this->generator->generate($routes), $target],
             $stub
         );
     }

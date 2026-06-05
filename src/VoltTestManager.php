@@ -6,6 +6,8 @@ namespace VoltTest\Laravel;
 
 use Exception;
 use Illuminate\Support\Collection;
+use VoltTest\CloudRun;
+use VoltTest\Exceptions\VoltTestException;
 use VoltTest\Laravel\Contracts\VoltTestCase;
 use VoltTest\Laravel\Scenarios\LaravelScenario;
 use VoltTest\TestResult;
@@ -32,6 +34,8 @@ class VoltTestManager
      * @var Collection
      * */
     protected Collection $scenarios;
+
+    protected bool $targetSet = false;
 
     /**
      * Create a new VoltTestManager instance
@@ -98,15 +102,106 @@ class VoltTestManager
     }
 
     /**
+     * Add a stage to the load profile.
+     *
+     * @param string $duration Duration of this stage (e.g. "5m", "30s", "1h")
+     * @param int $target Target VU count at the end of this stage
+     * @return $this
+     * @throws VoltTestException
+     */
+    public function stage(string $duration, int $target): self
+    {
+        $this->voltTest->stage($duration, $target);
+
+        return $this;
+    }
+
+    /**
+     * Replace the VoltTest instance with a fresh one (no load profile).
+     * Use before adding stages when the default config set constant load.
+     *
+     * @return $this
+     */
+    public function resetLoadProfile(): self
+    {
+        $this->voltTest = new VoltTest(
+            $this->config['name'] ?? 'Laravel Application Test',
+            $this->config['description'] ?? 'Performance test for Laravel application'
+        );
+
+        if (isset($this->config['http_debug'])) {
+            $this->voltTest->setHttpDebug($this->config['http_debug']);
+        }
+
+        return $this;
+    }
+
+    /**
+     * Set region distribution for cloud execution.
+     *
+     * @param array<string, int> $regions Region code => weight (e.g., ['us-east-1' => 60, 'eu-west-1' => 40])
+     * @return $this
+     * @throws VoltTestException
+     */
+    public function regions(array $regions): self
+    {
+        $this->voltTest->regions($regions);
+
+        return $this;
+    }
+
+    /**
+     * Enable cloud execution mode.
+     *
+     * @return $this
+     *
+     * @throws VoltTestException
+     */
+    public function cloud(): self
+    {
+        $apiKey = $this->config['cloud']['api_key'] ?? null;
+
+        if (empty($apiKey)) {
+            throw new VoltTestException(
+                'Cloud API key is required. Set VOLTTEST_API_KEY in your .env file.'
+            );
+        }
+
+        $this->voltTest->cloud($apiKey);
+
+        return $this;
+    }
+
+    /**
      * Run The Test
      *
      * @param bool $streamOutput
      *
-     * @return TestResult
+     * @return TestResult|CloudRun|null
      * */
-    public function run(bool $streamOutput = false): TestResult
+    public function run(bool $streamOutput = false): TestResult|CloudRun|null
     {
+        if (! $this->targetSet) {
+            $baseUrl = $this->config['base_url'] ?? null;
+            if (! empty($baseUrl)) {
+                $this->voltTest->target($baseUrl);
+            }
+        }
+
         return $this->voltTest->run($streamOutput);
+    }
+
+    /**
+     * Set a custom conflict prompt callback for when a test with the same name already exists.
+     *
+     * @param callable $callback Receives the existing test array, must return 'update' or 'create'
+     * @return $this
+     */
+    public function setOnConflictPrompt(callable $callback): self
+    {
+        $this->voltTest->setOnConflictPrompt($callback);
+
+        return $this;
     }
 
     /**
@@ -136,20 +231,60 @@ class VoltTestManager
      */
     protected function configureVoltTest(): void
     {
-        if (isset($this->config['virtual_users'])) {
-            $this->voltTest->setVirtualUsers($this->config['virtual_users']);
-        }
+        if (! empty($this->config['stages']) && is_array($this->config['stages'])) {
+            foreach ($this->config['stages'] as $stage) {
+                $this->voltTest->stage($stage['duration'], $stage['target']);
+            }
+        } else {
+            if (isset($this->config['virtual_users'])) {
+                $this->voltTest->setVirtualUsers($this->config['virtual_users']);
+            }
 
-        if (isset($this->config['duration'])) {
-            $this->voltTest->setDuration($this->config['duration']);
+            if (isset($this->config['duration'])) {
+                $this->voltTest->setDuration($this->config['duration']);
+            }
+
+            if (isset($this->config['ramp_up'])) {
+                $this->voltTest->setRampUp($this->config['ramp_up']);
+            }
         }
 
         if (isset($this->config['http_debug'])) {
             $this->voltTest->setHttpDebug($this->config['http_debug']);
         }
 
-        if (isset($this->config['ramp_up'])) {
-            $this->voltTest->setRampUp($this->config['ramp_up']);
+        if (! empty($this->config['regions']) && is_array($this->config['regions'])) {
+            $this->voltTest->regions($this->config['regions']);
         }
+    }
+
+    /**
+     * Set the target URL and idle timeout.
+     *
+     * @param string $url The base URL of the target (e.g. "https://api.example.com")
+     * @param string $idleTimeout Default is 30s. Example: 1s, 1m, 1h
+     * @return $this
+     * @throws VoltTestException
+     */
+    public function target(string $url, string $idleTimeout = '30s'): self
+    {
+        $this->voltTest->target($url, $idleTimeout);
+        $this->targetSet = true;
+
+        return $this;
+    }
+
+    public function name(string $name): self
+    {
+        $this->voltTest->setName($name);
+
+        return $this;
+    }
+
+    public function description(string $description): self
+    {
+        $this->voltTest->setDescription($description);
+
+        return $this;
     }
 }
