@@ -18,7 +18,7 @@ A Laravel package for performance testing with the VoltTest PHP SDK. Easily crea
 ## Requirements
 
 - PHP 8.2+
-- Laravel 10, 11, 12, or 13
+- Laravel 11, 12, or 13
 - VoltTest PHP SDK ^1.2
 
 ## Installation

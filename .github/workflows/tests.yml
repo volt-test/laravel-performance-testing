@@ -23,11 +23,8 @@ jobs:
       fail-fast: false
       matrix:
         php-version: ['8.2', '8.3', '8.4']
-        laravel-version: ['10.*', '11.*', '12.*']
+        laravel-version: ['11.*', '12.*']
         dependency-version: [prefer-stable]
-        exclude:
-          - php-version: '8.4'
-            laravel-version: '10.*'
         include:
           - php-version: '8.3'
             laravel-version: '13.*'
@@ -70,7 +67,6 @@ jobs:
         id: testbench
         run: |
           case "${{ matrix.laravel-version }}" in
-            10.*) echo "version=^8.0" >> $GITHUB_OUTPUT ;;
             11.*) echo "version=^9.0" >> $GITHUB_OUTPUT ;;
             12.*) echo "version=^10.0" >> $GITHUB_OUTPUT ;;
             13.*) echo "version=^11.0" >> $GITHUB_OUTPUT ;;
