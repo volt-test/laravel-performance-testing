@@ -21,8 +21,18 @@ jobs:
       fail-fast: false
       matrix:
         php-version: ['8.2', '8.3', '8.4']
-        laravel-version: ['12.*']
+        laravel-version: ['10.*', '11.*', '12.*']
         dependency-version: [prefer-stable]
+        exclude:
+          - php-version: '8.4'
+            laravel-version: '10.*'
+        include:
+          - php-version: '8.3'
+            laravel-version: '13.*'
+            dependency-version: prefer-stable
+          - php-version: '8.4'
+            laravel-version: '13.*'
+            dependency-version: prefer-stable
 
     name: PHP ${{ matrix.php-version }} - Laravel ${{ matrix.laravel-version }} (${{ matrix.dependency-version }})
 
