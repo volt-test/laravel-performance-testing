@@ -64,9 +64,19 @@ jobs:
           key: dependencies-laravel-${{ matrix.laravel-version }}-php-${{ matrix.php-version }}-composer-${{ hashFiles('composer.json') }}
           restore-keys: dependencies-laravel-${{ matrix.laravel-version }}-php-${{ matrix.php-version }}-composer-
 
+      - name: Determine testbench version
+        id: testbench
+        run: |
+          case "${{ matrix.laravel-version }}" in
+            10.*) echo "version=^8.0" >> $GITHUB_OUTPUT ;;
+            11.*) echo "version=^9.0" >> $GITHUB_OUTPUT ;;
+            12.*) echo "version=^10.0" >> $GITHUB_OUTPUT ;;
+            13.*) echo "version=^11.0" >> $GITHUB_OUTPUT ;;
+          esac
+
       - name: Install composer dependencies
         run: |
-          composer require "illuminate/support:${{ matrix.laravel-version }}" --no-interaction --no-update
+          composer require "illuminate/support:${{ matrix.laravel-version }}" "orchestra/testbench:${{ steps.testbench.outputs.version }}" --no-interaction --no-update
           composer update --${{ matrix.dependency-version }} --prefer-dist --no-interaction
 
       - name: List Installed Dependencies
