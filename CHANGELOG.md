@@ -5,6 +5,43 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [v1.3.0] - 2026-06-05
+
+### Added
+
+#### Cloud Execution
+- **Cloud mode support** — Run tests on VoltTest Cloud via `VoltTest::cloud()`, config, or `--cloud` CLI flag
+- **API key authentication** — Generated from [volt-test.com](https://volt-test.com), configured via `VOLTTEST_API_KEY`
+- **Conflict handling** — Interactive prompt when a test name already exists, with programmatic override via `setOnConflictPrompt()`
+
+#### Stages
+- **Staged load profiles** — Define multi-phase ramp-up/hold/ramp-down patterns via `stage()`, config, or `--stage` CLI option
+- **`resetLoadProfile()`** — Reset load settings when switching to stages in test classes
+
+#### Target Configuration
+- **`target()` method** — Set target URL and idle timeout explicitly on `VoltTestManager` and via Facade
+- **`--target` CLI option** — Override config `base_url` from the command line
+- **Auto-fallback** — Uses `base_url` config when `target()` is not called
+- **Stub generation** — `volttest:make` now includes `target()` in generated test classes
+
+#### Region Distribution
+- **`regions()` method** — Distribute load across multiple AWS regions via Facade, config, or `--region` CLI option
+
+#### Other
+- **`name()` and `description()` methods** — Update test name and description programmatically with chaining
+- **Default load profile** — Defaults to 10 virtual users when no `--users` or `--stage` is provided
+
+### Changed
+- **README slimmed down** — Moved full documentation to [docs.volt-test.com](https://docs.volt-test.com), README now contains installation, quick start, and docs links
+- **VoltTest Facade** — Added `target()` to `@method` annotations for IDE autocomplete
+- **PHP SDK dependency** — Updated to `^1.2`
+
+### Dependencies
+- Requires VoltTest PHP SDK `^1.2`
+
+### Full Changelog
+[v1.2.0...v1.3.0](https://github.com/volt-test/laravel-performance-testing/compare/v1.2.0...v1.3.0)
+
 ## [v1.2.0] - 2025-11-22
 
 ### Added
@@ -109,7 +146,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## Links
 
-- [Unreleased]: https://github.com/volt-test/laravel-performance-testing/compare/v1.1.0...HEAD
+- [Unreleased]: https://github.com/volt-test/laravel-performance-testing/compare/v1.3.0...HEAD
+- [v1.3.0]: https://github.com/volt-test/laravel-performance-testing/compare/v1.2.0...v1.3.0
+- [v1.2.0]: https://github.com/volt-test/laravel-performance-testing/compare/v1.1.0...v1.2.0
 - [1.1.0]: https://github.com/volt-test/laravel-performance-testing/compare/v1.0.0...v1.1.0
 - [1.0.0]: https://github.com/volt-test/laravel-performance-testing/compare/0.0.6-beta...v1.0.0
 - [0.0.6-beta]: https://github.com/volt-test/laravel-performance-testing/compare/0.0.5-beta...0.0.6-beta
