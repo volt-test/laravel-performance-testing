@@ -433,7 +433,6 @@ class VoltTestManagerTest extends TestCase
         // We verify the targetSet flag is false before run
         $reflection = new \ReflectionClass($manager);
         $prop = $reflection->getProperty('targetSet');
-        $prop->setAccessible(true);
         $this->assertFalse($prop->getValue($manager));
     }
 
@@ -447,7 +446,6 @@ class VoltTestManagerTest extends TestCase
 
         $reflection = new \ReflectionClass($manager);
         $prop = $reflection->getProperty('targetSet');
-        $prop->setAccessible(true);
         $this->assertTrue($prop->getValue($manager));
 
         $voltTestConfig = $this->getVoltTestConfig($manager);
@@ -468,7 +466,6 @@ class VoltTestManagerTest extends TestCase
 
         $reflection = new \ReflectionClass($this->manager);
         $prop = $reflection->getProperty('targetSet');
-        $prop->setAccessible(true);
         $this->assertTrue($prop->getValue($this->manager));
     }
 
@@ -525,7 +522,6 @@ class VoltTestManagerTest extends TestCase
     {
         $reflection = new \ReflectionClass($manager->getVoltTest());
         $configProp = $reflection->getProperty('config');
-        $configProp->setAccessible(true);
 
         return $configProp->getValue($manager->getVoltTest())->toArray();
     }

@@ -36,7 +36,6 @@ class VoltTestManagerCloudTest extends TestCase
         $voltTest = $manager->getVoltTest();
         $reflection = new \ReflectionClass(VoltTest::class);
         $property = $reflection->getProperty('cloudApiKey');
-        $property->setAccessible(true);
 
         $this->assertEquals('vt_test_key_123', $property->getValue($voltTest));
         $this->assertSame($manager, $result);

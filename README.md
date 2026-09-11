@@ -1,6 +1,6 @@
 # Laravel Performance Testing
 
-A Laravel package for performance testing with the VoltTest PHP SDK. Easily create and run load tests for your Laravel applications with built-in route discovery, CSRF handling, and comprehensive reporting.
+A Laravel package for performance testing with the VoltTest PHP SDK. Easily create and run load tests for your Laravel applications with built-in route discovery, per-virtual-user session handling, one-call CSRF token extraction, and comprehensive reporting.
 
 [![Latest Version on Packagist](https://img.shields.io/packagist/v/volt-test/laravel-performance-testing.svg?style=flat-square)](https://packagist.org/packages/volt-test/laravel-performance-testing) [![Total Downloads](https://img.shields.io/packagist/dt/volt-test/laravel-performance-testing.svg?style=flat-square)](https://packagist.org/packages/volt-test/laravel-performance-testing) [![GitHub Tests Action Status](https://img.shields.io/github/actions/workflow/status/volt-test/laravel-performance-testing/tests.yml?branch=main&label=tests&style=flat-square)](https://github.com/volt-test/laravel-performance-testing/actions)
 
@@ -13,7 +13,7 @@ A Laravel package for performance testing with the VoltTest PHP SDK. Easily crea
 - **Cloud Execution** — Run tests on VoltTest Cloud with multi-region support
 - **CSV Data Sources** — Drive tests with dynamic data from CSV files
 - **PHPUnit Integration** — Run performance tests in your test suite with assertions
-- **CSRF & Cookie Handling** — Automatic Laravel session and CSRF token management
+- **Sessions & CSRF** — Cookies and sessions handled automatically per virtual user; CSRF is one call, `extractCsrfToken()`
 
 ## Requirements
 

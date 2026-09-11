@@ -32,6 +32,12 @@ jobs:
           - php-version: '8.4'
             laravel-version: '13.*'
             dependency-version: prefer-stable
+          - php-version: '8.5'
+            laravel-version: '12.*'
+            dependency-version: prefer-stable
+          - php-version: '8.5'
+            laravel-version: '13.*'
+            dependency-version: prefer-stable
 
     name: PHP ${{ matrix.php-version }} - Laravel ${{ matrix.laravel-version }} (${{ matrix.dependency-version }})
 
