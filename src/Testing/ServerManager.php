@@ -250,13 +250,20 @@ class ServerManager
                 ],
             ]);
 
-            $response = @file_get_contents($url, false, $context);
+            // Read the status line from the stream's wrapper metadata rather than the
+            // $http_response_header local: PHP 8.4 deprecates that variable and its
+            // replacement, http_get_last_response_headers(), does not exist on 8.2/8.3.
+            $stream = @fopen($url, 'r', false, $context);
+            if ($stream === false) {
+                continue;
+            }
+            $headers = stream_get_meta_data($stream)['wrapper_data'] ?? [];
+            fclose($stream);
 
-            if ($response !== false && isset($http_response_header[0])) {
-                // Accept 2xx, 3xx, 404, 405
-                if (preg_match('/HTTP\/\d\.\d\s+[2345]\d{2}/', $http_response_header[0])) {
-                    return true;
-                }
+            // Accept 2xx, 3xx, 404, 405
+            if (is_array($headers) && isset($headers[0]) && is_string($headers[0])
+                && preg_match('/HTTP\/\d\.\d\s+[2345]\d{2}/', $headers[0])) {
+                return true;
             }
         }
 

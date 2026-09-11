@@ -142,7 +142,6 @@ class LaravelScenarioCsvTest extends TestCase
         $scenario = new LaravelScenario(new Scenario('Test Scenario'));
         $reflection = new \ReflectionClass($scenario);
         $method = $reflection->getMethod('resolveCsvFilePath');
-        $method->setAccessible(true);
 
         $csvConfig = ['path' => '/custom/path'];
         $result = $method->invoke($scenario, 'test.csv', $csvConfig);
@@ -155,7 +154,6 @@ class LaravelScenarioCsvTest extends TestCase
         $scenario = new LaravelScenario(new Scenario('Test Scenario'));
         $reflection = new \ReflectionClass($scenario);
         $method = $reflection->getMethod('resolveCsvFilePath');
-        $method->setAccessible(true);
 
         $csvConfig = ['path' => '/custom/path'];
         $result = $method->invoke($scenario, '/absolute/path/test.csv', $csvConfig);
