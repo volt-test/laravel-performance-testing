@@ -1,0 +1,33 @@
+# Weekly, grouped version updates for dev tooling and workflow actions only.
+# Runtime constraints in composer.json are what users install against, so they
+# change by hand. Lives on main; release branches are not updated.
+version: 2
+updates:
+  - package-ecosystem: composer
+    directory: /
+    schedule:
+      interval: weekly
+      day: monday
+    cooldown:
+      default-days: 7
+      semver-major-days: 14
+    commit-message:
+      prefix: chore(deps)
+    allow:
+      - dependency-type: development
+    groups:
+      dev-minor-patch:
+        update-types: [minor, patch]
+
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: weekly
+      day: monday
+    cooldown:
+      default-days: 7
+    commit-message:
+      prefix: chore(deps)
+    groups:
+      actions:
+        patterns: ["*"]
